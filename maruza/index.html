@@ -1134,7 +1134,7 @@ function penInit(){const cv=$("ink"),c=cv.getContext("2d"),lec=$("lec");const fi
  pen.redraw=redraw}
 function togglePen(v){pen.on=v==null?!pen.on:v;$("ink").classList.toggle("on",pen.on);$("penBar").classList.toggle("hidden",!pen.on);$("bPen").classList.toggle("on",pen.on);toast(pen.on?"Qalam yoqildi: ekranga yozing":"Qalam o'chirildi (chizmalar saqlanadi)")}
 /* ---------- ishga tushirish ---------- */
-function init(){setFs(st.fs);showLecture(1);welcome();penInit();histBtns();
+function init(){setFs(st.fs);{const hm=/m=(\d+)/.exec(location.hash),hn=hm?+hm[1]:0;if(hn>=1&&hn<=12)showLecture(hn);else{showLecture(1);welcome();}window.addEventListener("hashchange",()=>{const m=/m=(\d+)/.exec(location.hash);if(m&&+m[1]>=1&&+m[1]<=12)showLecture(+m[1]);});}penInit();histBtns();
  $("bNav").onclick=()=>{$("nav").classList.toggle("hidden");buildNav()};
  $("nav").onclick=e=>{const l=e.target.closest(".lec"),s=e.target.closest(".sec");if(s){showLecture(st.ch,s.dataset.s);$("nav").classList.add("hidden")}else if(l){showLecture(+l.dataset.l);if(!LEC[+l.dataset.l])toast("Bu ma'ruza tez orada qo'shiladi");$("nav").classList.add("hidden")}};
  $("lec").onclick=e=>{const t=e.target.closest(".term");if(t)openTerm(t.dataset.t)};
