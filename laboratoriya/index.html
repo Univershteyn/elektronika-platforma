@@ -2364,7 +2364,7 @@ function certHTML(sc,ld){const c=CL[S.lang]||CL.uz,g=grade(sc.score),gt=(GRADES[
 function certIds(L,ld,sc){const s=S.student,base=[s.name.trim().toLowerCase(),s.group.trim(),s.id.trim(),L.id,sc.score,ld.t1].join("|");
  const h1=fnv(base),h2=fnv("v|"+base+"|"+h1),h3=fnv("w|"+h2);const hx=x=>x.toString(16).toUpperCase().padStart(8,"0");
  const B32="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let v="";for(let i=0;i<10;i++){v+=B32[(i<5?h2>>>(i*6):h3>>>((i-5)*6))&31]}
- return{no:`TDPI-EL-2026-${String(L.id).padStart(2,"0")}-${hx(h1)}`,code:v.slice(0,5)+"-"+v.slice(5)}}
+ return{no:`TerDPI-EL-2026-${String(L.id).padStart(2,"0")}-${hx(h1)}`,code:v.slice(0,5)+"-"+v.slice(5)}}
 const Cert={pdf(L,ld,sc){const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});let F="helvetica";
  try{d.addFileToVFS("dv.ttf",FONT_R);d.addFont("dv.ttf","DV","normal");d.addFileToVFS("dvb.ttf",FONT_B);d.addFont("dvb.ttf","DV","bold");F="DV"}catch(e){console.warn(e)}
  const W=297,H=210,cx=W/2,a=AUTHOR.uz,st=S.student,g=grade(sc.score),ids=certIds(L,ld,sc),dt=new Date(ld.t1||Date.now());
@@ -2747,7 +2747,7 @@ async function sha(s){if(crypto.subtle){const b=await crypto.subtle.digest("SHA-
 $("#pwb").onclick=async()=>{if(await sha($("#pw").value)===PW_HASH){$("#gate").remove();sessionStorage.setItem("elab_ok",1)}else $("#pwe").textContent="✘"};$("#pw").onkeydown=e=>{if(e.key==="Enter")$("#pwb").click()};
 if(sessionStorage.getItem("elab_ok"))$("#gate").remove();
 $("#lang").onchange=e=>{S.lang=e.target.value;save();render()};
-function authorUI(){const a=AU(),l=AUL[S.lang]||AUL.uz;document.querySelectorAll(".au-box").forEach(e=>e.innerHTML=`<img src="${ASSETS.emblem}" alt="TDPI" class="au-logo"><div><small>${l[0]}:</small><br><b>${a.name}</b><br>${a.pos}<br>${a.inst} · ${AUTHOR.year}</div>`);
+function authorUI(){const a=AU(),l=AUL[S.lang]||AUL.uz;document.querySelectorAll(".au-box").forEach(e=>e.innerHTML=`<img src="${ASSETS.emblem}" alt="TerDPI" class="au-logo"><div><small>${l[0]}:</small><br><b>${a.name}</b><br>${a.pos}<br>${a.inst} · ${AUTHOR.year}</div>`);
  $("#foot").innerHTML=`© ${AUTHOR.year} · ${l[0]}: <b>${a.name}</b>, ${a.pos}, ${a.inst}`;$("#abt").textContent="ℹ "+l[1]}
 $("#abt").onclick=()=>{authorUI();$("#about").style.display="flex"};$("#about").onclick=e=>{if(e.target.id==="about"||e.target.dataset.x)$("#about").style.display="none"};
 {const r0=render;render=function(){r0();authorUI()}}
