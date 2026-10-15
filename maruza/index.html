@@ -40,16 +40,16 @@ details.box summary{cursor:pointer;font-weight:bold;padding:6px 0;list-style:non
 #card{background:#fff;border-radius:14px;border:2px solid var(--line);padding:12px 18px;flex:none;display:flex;gap:18px;align-items:center}
 #cDef{flex:1.3;font-size:21px;line-height:1.4}#cF{flex:1;font-size:21px;text-align:center;border-left:2px dashed var(--line);padding-left:12px}#cF .katex-display{margin:.3em 0}
 #simBox{flex:1;display:flex;flex-direction:column;background:#fff;border-radius:14px;border:2px solid var(--line);padding:8px 12px;min-height:0}
-#simTitle{font-size:21px;font-weight:bold;color:#17325c;padding:2px 4px 6px}
-#cvWrap{flex:1;min-height:0;position:relative}#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
-#simUI{display:flex;gap:14px;flex:none;padding-top:6px;border-top:2px solid #eef1f6}
-#ctrls{flex:1.6;display:grid;grid-template-columns:1fr 1fr;gap:6px 20px}
+#simHead{display:flex;align-items:center;gap:8px;flex:none;flex-wrap:wrap}#simTitle{flex:1;min-width:0;font-size:21px;font-weight:bold;color:#17325c;padding:2px 4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cvWrap{height:400px;position:relative;flex:none}#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-x pan-y}
+#simUI{display:flex;flex-wrap:wrap;gap:6px 14px;flex:none;max-height:48%;overflow-y:auto;touch-action:pan-y;padding-top:6px;border-top:2px solid #eef1f6}
+#ctrls{flex:1.6 1 360px;min-width:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:2px 18px}
 .ctl{display:flex;flex-direction:column;font-size:18px}.ctl .lab{display:flex;justify-content:space-between}.ctl .val{font-weight:bold;color:var(--acc)}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;touch-action:none}
 input[type=range]::-webkit-slider-runnable-track{height:12px;background:#d5e2f5;border-radius:6px}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:40px;height:40px;border-radius:50%;background:var(--acc);margin-top:-14px;border:4px solid #fff;box-shadow:0 2px 6px #0004}
 select{font:inherit;font-size:19px;height:48px;border-radius:10px;border:2px solid var(--line);padding:0 8px;background:#fff}
-#side{flex:1;display:flex;flex-direction:column;gap:6px}#btns .btn{width:100%;background:#e8890c;font-size:20px;margin-bottom:4px}
+#side{flex:1 1 220px;min-width:0;display:flex;flex-direction:column;gap:6px}#btns .btn{width:100%;background:#e8890c;font-size:20px;margin-bottom:4px}
 #readout{font-size:18px;border-collapse:collapse;width:100%;table-layout:fixed}#readout td{overflow-wrap:anywhere}#readout td{padding:3px 6px;border-bottom:1px solid #eef1f6}#readout td:last-child{font-weight:bold;color:#7b3fc4;text-align:right}
 #welcome{flex:1;background:#fff;border-radius:14px;border:2px solid var(--line);padding:30px 40px;overflow:auto;font-size:22px}
 #welcome .hero{display:flex;gap:28px;align-items:center}#welcome img{width:170px}#welcome h1{font-size:34px;color:#17325c;margin:0 0 8px}
@@ -60,14 +60,31 @@ select{font:inherit;font-size:19px;height:48px;border-radius:10px;border:2px sol
 #penBar .btn.sel{background:#e8890c}
 #toast{position:fixed;left:50%;top:90px;transform:translateX(-50%);background:#17325c;color:#fff;font-size:22px;padding:12px 24px;border-radius:12px;opacity:0;transition:opacity .3s;z-index:70;pointer-events:none}
 .soonpage h2{background:#fff4e0!important;border-left-color:#e8890c!important}
-</style>
-<style>/* TOUCH-FIX: sensorli doskada surish matnni belgilamasin */
+
+/* TOUCH-FIX: sensorli doskada surish matnni belgilamasin */
 html,body,#lec,#lec *,.term,#panel,#panel *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
 input,textarea,select,[contenteditable="true"]{-webkit-user-select:text!important;user-select:text!important}
 #lec,#panel,#toc,.vp-body{touch-action:pan-y;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .term{touch-action:manipulation}
 #ink{pointer-events:none}#ink.on{pointer-events:auto}
-</style></head><body>
+
+/* ZOOM: vizual panel masshtabi (sim avtomatik moslanadi, −/+/Moslash) */
+#zoomBar{display:flex;align-items:center;gap:6px;flex:none}
+.zb{font:inherit;font-size:26px;font-weight:bold;min-width:52px;height:52px;border:0;border-radius:12px;background:#2c4f86;color:#fff;cursor:pointer;padding:0 10px;touch-action:manipulation}
+.zb:active{transform:scale(.95)}.zb.zfit{font-size:18px;background:#1e9e4a}.zb:disabled{opacity:.35}
+#zPct{min-width:64px;text-align:center;font-weight:bold;font-size:19px;color:#17325c}
+#simHost{flex:1;min-height:0;overflow:auto;position:relative;touch-action:pan-x pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#simHost.grab{cursor:grab}#simHost.grabbing{cursor:grabbing}
+#simSizer{position:relative;margin:0 auto;overflow:hidden}
+#simInner{position:absolute;left:0;top:0;transform-origin:0 0;display:flex;flex-direction:column}
+@media (max-height:700px){#card{padding:6px 12px}#cDef,#cF{font-size:17px}#simTitle{font-size:18px}.bar{min-height:60px}.btn{height:48px;font-size:20px}}
+#card{max-height:34%;overflow:auto;touch-action:pan-y}#simBox{min-height:58%}
+#cF{min-width:0;overflow-x:auto}#cDef{min-width:0}
+@media (max-width:1300px){#card{flex-direction:column;align-items:stretch;gap:6px}#cF{border-left:0;border-top:2px dashed var(--line);padding:4px 0 0}}
+@media (max-height:820px){.ctl{font-size:16px}input[type=range]{height:38px}#readout{font-size:16px}#readout td{padding:1px 6px}#btns .btn{height:48px;font-size:18px}}
+@media (max-height:700px){#card{max-height:26%}}
+</style>
+</head><body>
 <div id="app">
  <section id="left">
   <header class="bar">
@@ -94,8 +111,11 @@ input,textarea,select,[contenteditable="true"]{-webkit-user-select:text!importan
   <div id="vis">
    <div id="card" class="hidden"><div id="cDef"></div><div id="cF"></div></div>
    <div id="simBox" class="hidden">
-    <div id="simTitle"></div>
-    <div id="cvWrap"><canvas id="cv"></canvas></div>
+    <div id="simHead"><div id="simTitle"></div>
+     <div id="zoomBar"><button id="zOut" class="zb" title="Kichraytirish">−</button><span id="zPct">100%</span><button id="zIn" class="zb" title="Kattalashtirish">+</button><button id="zFit" class="zb zfit" title="Oynaga moslash">Moslash</button></div></div>
+    <div id="simHost"><div id="simSizer"><div id="simInner">
+     <div id="cvWrap"><canvas id="cv"></canvas></div>
+    </div></div></div>
     <div id="simUI"><div id="ctrls"></div><div id="side"><div id="btns"></div><table id="readout"></table></div></div>
    </div>
    <div id="welcome"></div>
@@ -628,7 +648,7 @@ SIM("lc",{t:"Tebranish konturi: erkin va so'nuvchi tebranishlar",
 SIM("phasor",{t:"O'zgaruvchan tok: impedans, fazalar siljishi, vektor diagramma",
  c:[{k:"mode",l:"Zanjir",o:[["R","faqat R"],["L","faqat L"],["C","faqat C"],["RLC","ketma-ket RLC"]],v:"RLC"},{k:"f",l:"Chastota f",min:10,max:1000,st:5,v:200,u:"Hz"},{k:"R",l:"R",min:5,max:100,st:1,v:30,u:"Ω"},{k:"L",l:"L",min:1,max:200,st:1,v:50,u:"mH"},{k:"C",l:"C",min:1,max:100,st:1,v:20,u:"µF"}],
  calc(P){const w=TAU*P.f,XL=w*P.L*1e-3,XC=1/(w*P.C*1e-6);let R=P.R,X=0;if(P.mode=="R")X=0;if(P.mode=="L"){R=0;X=XL}if(P.mode=="C"){R=0;X=-XC}if(P.mode=="RLC")X=XL-XC;const Z=Math.hypot(R,X),ph=Math.atan2(X,R),U=10,I=U/Z;return{XL,XC,R,X,Z,ph,I,U}},
- draw(c,W,H,P,S,dt){const r=this.calc(P);S.a=(S.a||0)+dt*1.2;const cx=230,cy=H*.42,sc=150/r.U;
+ draw(c,W,H,P,S,dt){const r=this.calc(P);S.a=(S.a||0)+dt*1.2;const cx=230,cy=Math.max(H*.42,205),sc=150/(P.mode=="RLC"?Math.max(r.U,r.I*Math.hypot(r.R,r.XL),r.I*Math.hypot(r.R,r.XC)):r.U);
   K.circ(c,cx,cy,170,null,C.grid,1);K.line(c,[[cx-180,cy],[cx+180,cy]],C.axis,1);K.line(c,[[cx,cy-180],[cx,cy+180]],C.axis,1);
   const a=S.a,ia=a-r.ph;
   if(P.mode=="RLC"){const ux=r.I*r.R*sc,ul=r.I*r.XL*sc,uc=r.I*r.XC*sc;const ca=Math.cos(ia),sa=Math.sin(ia);const p1=[cx+ux*ca,cy-ux*sa];K.arrow(c,cx,cy,p1[0],p1[1],C.green,3);
@@ -1105,17 +1125,54 @@ function welcome(){const ids=Object.keys(TERMS).filter(k=>(TERMS[k].ch||[]).incl
 /* ---------- simulyatsiya xosti ---------- */
 function openSim(id,over){if(st.sim)st.sim.stop();const sim=SIMS[id];if(!sim){$("simBox").classList.add("hidden");return}
  $("simBox").classList.remove("hidden");$("simTitle").textContent="▶ "+sim.t;const P={},S={};let alive=true;
- const ct=$("ctrls");ct.innerHTML="";(sim.c||[]).forEach(c=>{P[c.k]=over[c.k]!==undefined?over[c.k]:c.v;const d=document.createElement("div");d.className="ctl";
+ FB.dirty=true;FB.u=0;$("card").scrollTop=0;const ct=$("ctrls");ct.innerHTML="";ct.oninput=ct.onchange=()=>{clearTimeout(FB.t);FB.t=setTimeout(()=>{FB.dirty=true;FB.u=0},250)};(sim.c||[]).forEach(c=>{P[c.k]=over[c.k]!==undefined?over[c.k]:c.v;const d=document.createElement("div");d.className="ctl";
   if(c.o){d.innerHTML='<div class="lab"><span>'+c.l+"</span></div>";const s=document.createElement("select");c.o.forEach(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;s.appendChild(o)});s.value=P[c.k];s.onchange=()=>{P[c.k]=typeof c.v=="number"?+s.value:s.value};d.appendChild(s)}
   else{const fv=v=>c.f?c.f(v):num(v,c.st<.1?2:c.st<1?1:0)+(c.u?" "+c.u:"");d.innerHTML='<div class="lab"><span>'+c.l+'</span><span class="val"></span></div>';const r=document.createElement("input");r.type="range";r.min=c.min;r.max=c.max;r.step=c.st;r.value=P[c.k];const vl=d.querySelector(".val");vl.textContent=fv(P[c.k]);r.oninput=()=>{P[c.k]=+r.value;vl.textContent=fv(P[c.k])};d.appendChild(r)}
   ct.appendChild(d)});
- const bb=$("btns");bb.innerHTML="";(sim.btn||[]).forEach(([l,fn])=>{const b=document.createElement("button");b.className="btn";b.textContent=l;b.onclick=()=>fn(S,P);bb.appendChild(b)});
+ const bb=$("btns");bb.innerHTML="";(sim.btn||[]).forEach(([l,fn])=>{const b=document.createElement("button");b.className="btn";b.textContent=l;b.onclick=()=>{fn(S,P);FB.dirty=true};bb.appendChild(b)});
  const cv=$("cv"),ctx=cv.getContext("2d");let last=performance.now(),acc=0;
- function frame(now){if(!alive)return;const dt=Math.min(.05,(now-last)/1000);last=now;const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;if(cv.width!=Math.round(W*dpr)||cv.height!=Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
-  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);try{sim.draw(ctx,W,H,P,S,dt)}catch(e){console.error(e);alive=false;throw e}
+ function frame(now){if(!alive)return;const dt=Math.min(.05,(now-last)/1000);last=now;const W=cv.clientWidth,H=cv.clientHeight,M=ZM.pad,dpr=Math.min(4,(window.devicePixelRatio||1)*Math.max(.5,ZM.scale));if(cv.width!=Math.round(W*dpr)||cv.height!=Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);if(W-2*M!=FB.w||H-2*M!=FB.h||FB.dirty)fitProbe(sim,W-2*M,H-2*M,P,S);else if(++FB.n>45&&FB.u<12){FB.u++;fitProbe(sim,W-2*M,H-2*M,P,S,1)}ctx.translate(M+FB.ox,M+FB.oy);ctx.scale(FB.k,FB.k);try{sim.draw(ctx,W-2*M,H-2*M,P,S,dt)}catch(e){console.error(e);alive=false;throw e}
   acc+=dt;if(acc>.2||!S._r){acc=0;S._r=1;const rows=sim.info?sim.info.call(sim,P,S):[];$("readout").innerHTML=rows.map(([a,b])=>"<tr><td>"+a+"</td><td>"+b+"</td></tr>").join("")}
   requestAnimationFrame(frame)}
- requestAnimationFrame(frame);st.sim={stop(){alive=false},P,S,id}}
+ requestAnimationFrame(frame);st.sim={stop(){alive=false},P,S,id};ZM.uiFit()}
+/* auto-moslash: sim chizmasi o'z W×H chegarasidan chiqsa, uni panel ichiga kichraytirib markazlaymiz */
+const FB=window.FB_={k:1,ox:0,oy:0,w:0,h:0,dirty:true};
+function fitProbe(sim,LW,LH,P,S,union){if(!union||LW!=FB.w||LH!=FB.h)FB.bb=[0,0,LW,LH];FB.w=LW;FB.h=LH;FB.dirty=false;FB.n=0;if(LW<20||LH<20){FB.k=1;FB.ox=FB.oy=0;return}
+ const r=.25,c=document.createElement("canvas");c.width=Math.ceil(LW*3*r);c.height=Math.ceil(LH*3*r);const x=c.getContext("2d");x.setTransform(r,0,0,r,LW*r,LH*r);
+ try{sim.draw(x,LW,LH,P,S,0)}catch(e){return}const d=x.getImageData(0,0,c.width,c.height).data;let[x0,y0,x1,y1]=FB.bb,n=0;
+ for(let yy=0;yy<c.height;yy++)for(let xx=0;xx<c.width;xx++)if(d[(yy*c.width+xx)*4+3]>20){const X=xx/r-LW,Y=yy/r-LH;if(X<-2||Y<-2||X>LW+2||Y>LH+2){n++;if(X<x0)x0=X;if(Y<y0)y0=Y;if(X+1/r>x1)x1=X+1/r;if(Y+1/r>y1)y1=Y+1/r}}
+ if(n>=2)FB.bb=[x0,y0,x1,y1];else [x0,y0,x1,y1]=FB.bb;const k=Math.min(1,LW/(x1-x0),LH/(y1-y0));FB.k=k;FB.ox=(LW-(x1-x0)*k)/2-x0*k;FB.oy=(LH-(y1-y0)*k)/2-y0*k}
+/* ---------- ZOOM: sim konteyneri moslashuvchan + masshtab (50–200%) ---------- */
+const ZM={z:Math.min(2,Math.max(.5,+(localStorage.getItem("doska_zoom")||1)||1)),fit:1,scale:1,pad:16,DW:0,DH:0,
+ layout(keep){const host=$("simHost"),inner=$("simInner"),sz=$("simSizer"),wrap=$("cvWrap");if($("simBox").classList.contains("hidden"))return;
+  const hw=host.clientWidth,hh=host.clientHeight;if(!hw||!hh)return;
+  const cx=keep?keep[0]:0,cy=keep?keep[1]:0,ux=(host.scrollLeft+cx)/this.scale,uy=(host.scrollTop+cy)/this.scale;
+  const f=Math.min(1,hw/720,hh/400);let DW=hw/f,DH=hh/f;if(DW>DH*2)DW=DH*2;if(DH>DW*.9)DH=DW*.9;inner.style.width=DW+"px";wrap.style.height=DH+"px";
+  this.DW=DW;this.DH=DH;this.fit=f;const s=this.scale=f*this.z;
+  inner.style.transform="scale("+s+")";sz.style.width=Math.floor(DW*s)+"px";sz.style.height=Math.floor(DH*s)+"px";
+  sz.style.marginTop=Math.max(0,(hh-DH*s)/2)+"px";
+  if(keep){host.scrollLeft=ux*s-cx;host.scrollTop=uy*s-cy}
+  host.classList.toggle("grab",DW*s>hw+1||DH*s>hh+1);
+  $("zPct").textContent=Math.round(this.z*100)+"%";$("zOut").disabled=this.z<=.5+1e-6;$("zIn").disabled=this.z>=2-1e-6},
+ uiFit(){const ui=$("simUI"),box=$("simBox");if(box.classList.contains("hidden"))return;ui.style.zoom=1;const nat=ui.scrollHeight,av=box.clientHeight*.42;
+  ui.style.zoom=nat>av?Math.max(.72,av/nat).toFixed(3):1;this.layout()},
+ set(z,cx,cy){const host=$("simHost");z=Math.round(Math.min(2,Math.max(.5,z))*100)/100;if(cx==null){cx=host.clientWidth/2;cy=host.clientHeight/2}
+  this.z=z;try{localStorage.setItem("doska_zoom",z)}catch(e){}this.layout([cx,cy])},
+ init(){const host=$("simHost");$("zIn").onclick=()=>this.set(this.z+.1);$("zOut").onclick=()=>this.set(this.z-.1);$("zFit").onclick=()=>{this.set(1);host.scrollLeft=host.scrollTop=0};
+  new ResizeObserver(()=>this.layout()).observe(host);let bw=0,bh=0;new ResizeObserver(()=>{const b=$("simBox");if(b.clientWidth!=bw||b.clientHeight!=bh){bw=b.clientWidth;bh=b.clientHeight;this.uiFit()}}).observe($("simBox"));
+  const rel=e=>{const r=host.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+  host.addEventListener("wheel",e=>{if(!e.ctrlKey)return;e.preventDefault();const[x,y]=rel(e);this.set(this.z*(e.deltaY<0?1.1:1/1.1),x,y)},{passive:false});
+  /* sichqoncha bilan surish (sensorli ekranda brauzerning o'zi suradi) */
+  let drag=null;host.addEventListener("pointerdown",e=>{if(e.pointerType!="mouse"||e.button!==0)return;if(!host.classList.contains("grab"))return;drag=[e.clientX,e.clientY,host.scrollLeft,host.scrollTop];host.classList.add("grabbing");host.setPointerCapture(e.pointerId)});
+  host.addEventListener("pointermove",e=>{if(!drag)return;host.scrollLeft=drag[2]-(e.clientX-drag[0]);host.scrollTop=drag[3]-(e.clientY-drag[1])});
+  const end=()=>{drag=null;host.classList.remove("grabbing")};host.addEventListener("pointerup",end);host.addEventListener("pointercancel",end);
+  /* ikki barmoq bilan pinch */
+  let pin=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  host.addEventListener("touchstart",e=>{if(e.touches.length==2){pin={d:dist(e.touches),z:this.z}}},{passive:true});
+  host.addEventListener("touchmove",e=>{if(pin&&e.touches.length==2){e.preventDefault();const t=e.touches,r=host.getBoundingClientRect();this.set(pin.z*dist(t)/pin.d,(t[0].clientX+t[1].clientX)/2-r.left,(t[0].clientY+t[1].clientY)/2-r.top)}},{passive:false});
+  host.addEventListener("touchend",e=>{if(e.touches.length<2)pin=null});
+  window.__simLogical=()=>{const cv=$("cv");return[cv.clientWidth-2*this.pad,cv.clientHeight-2*this.pad]}}};
 /* ---------- qalam (annotatsiya) ---------- */
 const pen={on:false,col:"#d6322b",w:5,er:false,strokes:[]};
 function penInit(){const cv=$("ink"),c=cv.getContext("2d"),lec=$("lec");const fit=()=>{const d=window.devicePixelRatio||1;cv.width=innerWidth*d;cv.height=innerHeight*d;c.setTransform(d,0,0,d,0,0);redraw()};
@@ -1134,7 +1191,7 @@ function penInit(){const cv=$("ink"),c=cv.getContext("2d"),lec=$("lec");const fi
  pen.redraw=redraw}
 function togglePen(v){pen.on=v==null?!pen.on:v;$("ink").classList.toggle("on",pen.on);$("penBar").classList.toggle("hidden",!pen.on);$("bPen").classList.toggle("on",pen.on);toast(pen.on?"Qalam yoqildi: ekranga yozing":"Qalam o'chirildi (chizmalar saqlanadi)")}
 /* ---------- ishga tushirish ---------- */
-function init(){setFs(st.fs);{const hm=/m=(\d+)/.exec(location.hash),hn=hm?+hm[1]:0;if(hn>=1&&hn<=12)showLecture(hn);else{showLecture(1);welcome();}window.addEventListener("hashchange",()=>{const m=/m=(\d+)/.exec(location.hash);if(m&&+m[1]>=1&&+m[1]<=12)showLecture(+m[1]);});}penInit();histBtns();
+function init(){setFs(st.fs);{const hm=/m=(\d+)/.exec(location.hash),hn=hm?+hm[1]:0;if(hn>=1&&hn<=12)showLecture(hn);else{showLecture(1);welcome();}window.addEventListener("hashchange",()=>{const m=/m=(\d+)/.exec(location.hash);if(m&&+m[1]>=1&&+m[1]<=12)showLecture(+m[1]);});}penInit();ZM.init();histBtns();
  $("bNav").onclick=()=>{$("nav").classList.toggle("hidden");buildNav()};
  $("nav").onclick=e=>{const l=e.target.closest(".lec"),s=e.target.closest(".sec");if(s){showLecture(st.ch,s.dataset.s);$("nav").classList.add("hidden")}else if(l){showLecture(+l.dataset.l);if(!LEC[+l.dataset.l])toast("Bu ma'ruza tez orada qo'shiladi");$("nav").classList.add("hidden")}};
  $("lec").onclick=e=>{const t=e.target.closest(".term");if(t)openTerm(t.dataset.t)};
@@ -1145,7 +1202,8 @@ function init(){setFs(st.fs);{const hm=/m=(\d+)/.exec(location.hash),hn=hm?+hm[1
  $("bBack").onclick=()=>{if(st.hi>0){st.hi--;openTerm(st.hist[st.hi],false)}};$("bFwd").onclick=()=>{if(st.hi<st.hist.length-1){st.hi++;openTerm(st.hist[st.hi],false)}};
  $("bLab").onclick=()=>{const t=TERMS[st.term];if(t&&t.lab){window.open(LAB_URL+"#lab="+t.lab,"_blank");toast("Virtual laboratoriya: L"+t.lab+" – "+LABS[t.lab])}};
  addEventListener("keydown",e=>{if(e.key=="Escape"){togglePen(false);$("nav").classList.add("hidden")}});
- window.DOSKA={openTerm,showLecture,togglePen,st,pen}}
+ window.DOSKA={openTerm,showLecture,togglePen,st,pen,ZM}}
 init();
 </script>
-<a href="../" id="bosh-sahifa-link" title="Bosh sahifa" style="position:fixed;left:10px;bottom:10px;z-index:2147483000;background:rgba(15,23,42,.85);color:#fff;font:600 14px/1 system-ui,sans-serif;padding:10px 14px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.35)">&#8962; Bosh sahifa</a><span id="mualliflik-huquqi" style="position:fixed;left:150px;bottom:16px;z-index:2147483000;background:rgba(15,23,42,.75);color:#e2e8f0;font:12px/1.2 system-ui,sans-serif;padding:5px 10px;border-radius:999px;pointer-events:none">© 2026 Oromiddinov S.B. · DGU 68679</span></body></html>
+<a href="../" id="bosh-sahifa-link" title="Bosh sahifa" style="position:fixed;left:10px;bottom:10px;z-index:2147483000;background:rgba(15,23,42,.85);color:#fff;font:600 14px/1 system-ui,sans-serif;padding:10px 14px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.35)">&#8962; Bosh sahifa</a><span id="mualliflik-huquqi" style="position:fixed;left:150px;bottom:16px;z-index:2147483000;background:rgba(15,23,42,.75);color:#e2e8f0;font:12px/1.2 system-ui,sans-serif;padding:5px 10px;border-radius:999px;pointer-events:none">© 2026 Oromiddinov S.B. · DGU 68679</span>
+</body></html>
