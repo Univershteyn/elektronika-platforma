@@ -28,3 +28,4 @@ a.card:hover{transform:translateY(-4px)}.ic{font-size:2.6rem}.card h3{margin:10p
 .tl li::before{content:"";position:absolute;left:-31px;top:20px;width:14px;height:14px;border-radius:50%;background:#1e40af;border:3px solid #dbeafe}
 .tl li.now::before{background:#f59e0b}.yr{font-weight:700;color:#1e40af}
 @media(max-width:760px){.tl li{grid-template-columns:1fr;gap:4px}.author .photo{width:160px}}
+section[id]{scroll-margin-top:72px}
