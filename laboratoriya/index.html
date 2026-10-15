@@ -1539,7 +1539,7 @@ function mx(s){s=String(s);if(s.includes("\\("))return s;const tx=b=>b.replace(/
  let o;do{o=s;s=s.replace(/\\\)([ =\/·+−-]{1,5})\\\(/g,(m,op)=>op.replace(/·/g,"\\cdot ").replace(/−/g,"-"))}while(s!==o);return s}
 function tex(el){if(!el||!window.renderMathInElement)return;try{renderMathInElement(el,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\(",right:"\\)",display:false}],throwOnError:false,strict:false})}catch(e){console.warn(e)}}
 /* ===== author / institute (shown on gate, footer, about, reports, certificates) ===== */
-const AUTHOR={uz:{name:"Oromiddinov Sardorbek Boritovich",pos:"Fizika kafedrasi o‘qituvchisi",inst:"Termiz davlat pedagogika instituti",short:"Oromiddinov S.B."},
+const AUTHOR={uz:{name:"Oromiddinov Sardorbek Botirovich",pos:"Fizika kafedrasi o‘qituvchisi",inst:"Termiz davlat pedagogika instituti",short:"Oromiddinov S.B."},
  ru:{name:"Оромиддинов Сардорбек Боритович",pos:"Преподаватель кафедры физики",inst:"Термезский государственный педагогический институт",short:"Оромиддинов С.Б."},
  en:{name:"Sardorbek Oromiddinov",pos:"Lecturer, Department of Physics",inst:"Termez State Pedagogical Institute",short:"S. Oromiddinov"},year:2026};
 const AU=()=>AUTHOR[S.lang]||AUTHOR.uz;
