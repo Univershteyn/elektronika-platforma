@@ -13,7 +13,7 @@
 #figHead .btn{height:40px;min-width:44px;font-size:18px}
 #figScroll{flex:1;overflow:auto;background:#f8fafc;touch-action:pan-x pan-y}
 #figStage{transform-origin:0 0;min-width:100%;min-height:100%}
-#figStage svg{display:block;width:100%;height:auto}
+#figStage svg,#figStage img{display:block;width:100%;height:auto;background:#fff}
 .fighide{display:none !important}
 #figBack{display:none}
 @media (max-width:820px){
@@ -1129,7 +1129,10 @@ const LAB_URL="../laboratoriya/index.html"; /* virtual laboratoriya fayli (nisbi
 let figZ=1;
 function openFig(id){const f=window.MARUZA_FIGS&&MARUZA_FIGS[id];if(!f){toast("Rasm topilmadi: "+id);return}
  document.querySelectorAll(".figref").forEach(e=>e.classList.toggle("act",e.dataset.fig===id));
- $("figCap").textContent=f.cap;$("figStage").innerHTML=f.svg;figZ=1;applyFigZ();
+ $("figCap").textContent=f.cap;
+ if(f.files&&f.files.length){$("figStage").innerHTML=f.files.map(src=>'<img src="'+src+'" alt="" loading="lazy" decoding="async">').join("")}
+ else $("figStage").innerHTML=f.svg||"";
+ figZ=1;applyFigZ();
  $("figBox").classList.remove("hidden");$("figBack").classList.remove("hidden");document.body.classList.add("fig-open");
  $("welcome").classList.add("hidden");$("card").classList.add("fighide");$("simBox").classList.add("fighide");
  $("termTitle").textContent=id+"-rasm"}

@@ -1,8 +1,8 @@
 /* O‘qituvchi jurnali, o‘qituvchi paneli va AI maslahatchi.
    Namuna (Frank–Gerts) dagi UX: parol darvozasi, bo‘limlar, talaba yozuvlari,
    jsPDF eksport, localStorage. AI: window.claude.use("sample") bo‘lsa shu yo‘l,
-   aks holda panelga kiritilgan kalit (localStorage), doim ichki qoida-asosli
-   maslahatchi. Repoda maxfiy kalit yo‘q.
+   aks holda egasining reestr skripti (kalit faqat Apps Script xossasida),
+   u ham ishlamasa ichki qoida-asosli maslahatchi. Repoda maxfiy kalit yo‘q.
    Standart o‘qituvchi paroli kodda ochiq yozilmaydi — faqat SHA-256("ELAB|"+parol). */
 (function () {
   "use strict";
@@ -37,9 +37,6 @@
       an_avg: "O‘rtacha ball (yakunlangan ishlar)", an_fin: "Yakunlaganlar soni",
       an_wrong: "Ko‘p adashilgan hisoblar (noto‘g‘ri qolgan)",
       lb_h: "Reyting", lb_done: "Yakunlangan ish", lb_mean: "O‘rtacha ball",
-      set_ai: "AI kaliti (ixtiyoriy)", set_ai_p: "Kalit faqat shu brauzerning localStorage xotirasida qoladi, saytga yozilmaydi va JSON eksportga kirmaydi. Bo‘sh qoldirsangiz maslahatchi to‘liq internetsiz ishlaydi. Agar sahifa Claude muhitida ochilsa, namuna kabi window.claude ishlatiladi.",
-      set_key: "API kalit", set_base: "API manzili (OpenAI-mos /v1)", set_model: "Model",
-      set_key_ph: "sk-… (ixtiyoriy)", set_saved: "Sozlama saqlandi.",
       ai_btn: "AI maslahatchi", ai_h: "AI maslahatchi",
       ai_p: "Tayyor son bermaydi — formulani, tartibni va xato turini aytadi. Test paytida o‘chiriladi.",
       ai_ph: "Savolingizni yozing…", ai_send: "Yuborish", ai_think: "O‘ylayapti…",
@@ -84,9 +81,6 @@
       an_avg: "Средний балл (завершённые работы)", an_fin: "Число завершивших",
       an_wrong: "Частые ошибки в расчётах",
       lb_h: "Рейтинг", lb_done: "Завершено работ", lb_mean: "Средний балл",
-      set_ai: "Ключ AI (необязательно)", set_ai_p: "Ключ остаётся только в localStorage этого браузера, в репозиторий и в экспорт JSON не попадает. Если поле пустое, консультант работает полностью офлайн. В среде Claude используется window.claude, как в образце.",
-      set_key: "Ключ API", set_base: "Адрес API (совместимый с OpenAI /v1)", set_model: "Модель",
-      set_key_ph: "sk-… (необязательно)", set_saved: "Настройки сохранены.",
       ai_btn: "AI-консультант", ai_h: "AI-консультант",
       ai_p: "Не называет готовое число — объясняет формулу, порядок действий и тип ошибки. Во время теста выключен.",
       ai_ph: "Ваш вопрос…", ai_send: "Отправить", ai_think: "Думает…",
@@ -131,9 +125,6 @@
       an_avg: "Average score (finished labs)", an_fin: "Students who finished",
       an_wrong: "Calculations most often left wrong",
       lb_h: "Ranking", lb_done: "Labs finished", lb_mean: "Average score",
-      set_ai: "AI key (optional)", set_ai_p: "The key stays only in this browser’s localStorage. It is never committed and is not included in JSON export. Leave it empty and the tutor works fully offline. If the page runs inside Claude, window.claude is used, as in the sample.",
-      set_key: "API key", set_base: "API base (OpenAI-compatible /v1)", set_model: "Model",
-      set_key_ph: "sk-… (optional)", set_saved: "Settings saved.",
       ai_btn: "AI tutor", ai_h: "AI tutor",
       ai_p: "It does not give the final number — it explains the formula, the procedure and the kind of mistake. It is off during tests.",
       ai_ph: "Your question…", ai_send: "Send", ai_think: "Thinking…",
@@ -442,6 +433,10 @@
       try { j = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { j = null; }
       if (!j || typeof j !== "object") j = {};
       if (!j.students || typeof j.students !== "object") j.students = {};
+      if (j.apiKey || j.apiBase || j.apiModel) {
+        delete j.apiKey; delete j.apiBase; delete j.apiModel;
+        try { localStorage.setItem(KEY, JSON.stringify(j)); } catch (e) { }
+      }
       return j;
     },
     save(j) {
@@ -926,6 +921,16 @@
         <p><span class="ybtn">Avval kod oling.</span> Yangilashdan oldin 6-qadam kerak. Yo‘riqnoma baribir ochiladi.</p>
         <p><span class="ybtn">Panel paroli esimda yo‘q.</span> U faqat shu brauzerda. Sayt ma’lumotini o‘chirsangiz, parol yana 123456 bo‘ladi va shu kompyuterdagi lokal jurnal ham ketadi. Google jadvalidagi qatorlar o‘chmaydi.</p>
         <p><span class="ybtn">Token muddati.</span> Google belgisi taxminan bir soatda eskiradi. Talaba qayta <span class="ybtn">Google bilan kirish</span> qiladi.</p>
+        <h3 id="yAi">AI maslahatchi — faqat sayt egasi</h3>
+        <p>O‘qituvchi va talaba kalit kiritmaydi. Kalit sayt kodida ham yo‘q. Maslahatchi reestr skripti orqali ishlaydi; u ishlamasa ichki maslahatchi javob beradi.</p>
+        <ol>
+          <li>Bepul kalit: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.</li>
+          <li>Reestr jadvalida <span class="ybtn">Kengaytmalar → Apps Script</span>. Tishli g‘ildirak: <span class="ybtn">Настройки проекта</span> → <span class="ybtn">Свойства скрипта</span>. Xossa nomi <span class="ybtn">GEMINI_API_KEY</span>, qiymati — olingan kalit.</li>
+          <li>Skript kodini <span class="ybtn">docs/registry-apps-script.gs</span> dagi yangi nusxa bilan almashtiring.</li>
+          <li>Manzil o‘zgarmasligi uchun: <span class="ybtn">Начать развертывание</span> → <span class="ybtn">Управление развертываниями</span> → qalamcha → Version <span class="ybtn">Новая версия</span> → <span class="ybtn">Начать развертывание</span>. <span class="ybtn">/exec</span> o‘sha holicha qoladi.</li>
+          <li>Birinchi chaqiruvda Google <span class="ybtn">UrlFetchApp</span> uchun yangi ruxsat so‘raydi. Tasdiqlang.</li>
+          <li>Skript yana yangilandi: maslahatchi tayyor sonni aytmaydi. Yangi faylni qayta joylab, <span class="ybtn">Новая версия</span> bilan yana deploy qiling.</li>
+        </ol>
         <div class="ybox">Sayt egasi Cloud Console, reestr va namuna jadvalni bir marta sozlaydi. O‘qituvchi buni qilmaydi. Ega uchun qadamlar: docs/google-setup-uz.md</div>
       </div>`;
       document.getElementById("tPane").querySelectorAll("[data-yjump]").forEach(btn => {
@@ -939,12 +944,7 @@
       const j = this.store();
       const still = !j.pw || j.pw === DEFH;
       document.getElementById("tPane").innerHTML = `<h4 style="margin:0 0 6px">${esc(tr("tp_pwchange"))}</h4>${still ? `<p class="tmsg warn">${esc(tr("tp_std"))}</p>` : ""}
-        <form id="tPwF" class="tgrid"><input id="tNew" type="password" autocomplete="new-password" placeholder="${esc(tr("tp_pwnew"))}" style="min-width:220px"><button class="sec" type="submit">${esc(tr("tp_save"))}</button></form><div id="tPwMsg"></div>
-        <h4>${esc(tr("set_ai"))}</h4><p class="tmsg info">${esc(tr("set_ai_p"))}</p>
-        <div class="row"><label>${esc(tr("set_key"))}</label><input id="ak" type="password" autocomplete="off" placeholder="${esc(tr("set_key_ph"))}" value="${esc(j.apiKey || "")}" style="flex:1"></div>
-        <div class="row"><label>${esc(tr("set_base"))}</label><input id="ab" autocomplete="off" placeholder="https://api.openai.com/v1" value="${esc(j.apiBase || "")}" style="flex:1"></div>
-        <div class="row"><label>${esc(tr("set_model"))}</label><input id="am" autocomplete="off" placeholder="gpt-4o-mini" value="${esc(j.apiModel || "")}" style="flex:1"></div>
-        <button type="button" id="aSave">${esc(tr("tp_save"))}</button><div id="aMsg"></div>`;
+        <form id="tPwF" class="tgrid"><input id="tNew" type="password" autocomplete="new-password" placeholder="${esc(tr("tp_pwnew"))}" style="min-width:220px"><button class="sec" type="submit">${esc(tr("tp_save"))}</button></form><div id="tPwMsg"></div>`;
       document.getElementById("tPwF").onsubmit = async e => {
         e.preventDefault();
         const v = document.getElementById("tNew").value;
@@ -953,14 +953,6 @@
         const j2 = this.store(); j2.pw = await EL.sha("ELAB|" + v); TJ.save(j2);
         document.getElementById("tNew").value = "";
         msg.innerHTML = `<div class="tmsg ok">${esc(tr("tp_pwok"))}</div>`;
-      };
-      document.getElementById("aSave").onclick = () => {
-        const j2 = this.store();
-        j2.apiKey = document.getElementById("ak").value.trim();
-        j2.apiBase = document.getElementById("ab").value.trim();
-        j2.apiModel = document.getElementById("am").value.trim();
-        TJ.save(j2);
-        document.getElementById("aMsg").innerHTML = `<div class="tmsg ok">${esc(tr("set_saved"))}</div>`;
       };
     },
     csv(recs) {
@@ -1119,9 +1111,16 @@
       return `Lab ${L.id} (${L.title && L.title.en}). Step ${ld.step}. ${g ? "Idea: " + g.idea.en : ""} Series: ${series || "none"}. Readings: ${live || "none"}. Calculations (status only, no expected values): ${calc || "not started"}.`;
     },
     systemPrompt() {
-      const name = { uz: "o‘zbek lotin yozuvida", ru: "по-русски", en: "in English" }[lang()];
-      return `You are a Socratic electronics laboratory tutor at Termez State Pedagogical Institute (author: Oromiddinov Sardorbek Botirovich) inside the virtual lab "Elektronika va signallarni qayta ishlash". The student is doing one of 14 labs on a 3D bench. Answer ONLY ${name}. Never give the numeric result the student must read or compute, and never give a truth-table bit string. Explain the formula, the unit, and the next action on the bench. If their value is wrong, name only the kind of mistake (order of magnitude, sign, unit, or format) without stating the correct number. Max 90 words. If the question is unrelated, refuse in one sentence.
-CURRENT STATE (do not recite it): ${this.context()}`;
+      const hint = lang() === "ru" ? "The page language is Russian." : lang() === "en" ? "The page language is English." : "The page language is Uzbek.";
+      return `You are a Socratic electronics laboratory guide at Termez State Pedagogical Institute, inside "Elektronika va signallarni qayta ishlash". You never solve the lab. You only give direction (yo‘nalish) and the next step.
+HARD RULES:
+- NEVER compute or state a final number, a measured result, a calculated result, or a truth-table bit string.
+- Tell the student which formula to write, which quantities to read on the simulator, their units, and the order of steps. Ask one short guiding question.
+- If they ask for the answer ("javobini ayt", "javobni ber", "скажи ответ", "tell me the answer"), refuse politely and give the next step instead.
+- You may check a number they already typed only qualitatively: order of magnitude, sign, or unit ("tartibi to‘g‘ri", "birlikni tekshiring"). Do not say the correct value.
+- Language: Uzbek Latin by default. If their latest message is Russian, answer in Russian. If it is English, answer in English. ${hint}
+- At most 90 words. Unrelated questions: one short refusal.
+CURRENT STATE (status only; do not turn these into the answer): ${this.context()}`;
     },
     async tryClaude(history) {
       if (!this.sample) return null;
@@ -1129,23 +1128,52 @@ CURRENT STATE (do not recite it): ${this.context()}`;
       const res = await this.sample(input, { modelTier: "quick", cache: false, onText: ({ text }) => this.draw(text) });
       return res && res.text ? res.text.trim() : null;
     },
-    async tryApi(history) {
-      const j = TJ.load();
-      if (!j.apiKey) return null;
-      const base = (j.apiBase || "https://api.openai.com/v1").replace(/\/$/, "");
-      const model = j.apiModel || "gpt-4o-mini";
+    clientId() {
+      const k = "elektronika_ai_client_v1";
+      let id = "";
+      try { id = localStorage.getItem(k) || ""; } catch (e) { id = ""; }
+      if (!/^[A-Za-z0-9_-]{16,40}$/.test(id)) {
+        const b = new Uint8Array(16);
+        crypto.getRandomValues(b);
+        id = Array.from(b, x => x.toString(16).padStart(2, "0")).join("");
+        try { localStorage.setItem(k, id); } catch (e) { }
+      }
+      return id;
+    },
+    packMessages(history) {
+      const scrub = s => String(s || "").replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "").slice(0, 1500);
+      const sys = scrub(this.systemPrompt()).slice(0, 3500);
+      const rest = history.slice(-7).map(m => ({
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: scrub(m.content)
+      })).filter(m => m.content);
+      let messages = [{ role: "system", content: sys }, ...rest].slice(0, 8);
+      const size = () => messages.reduce((n, m) => n + m.content.length, 0);
+      while (messages.length > 1 && size() > 6000) messages.splice(1, 1);
+      if (size() > 6000) messages[0].content = messages[0].content.slice(0, 6000);
+      return messages;
+    },
+    async tryProxy(history) {
+      const cfg = window.ELAB_GOOGLE || {};
+      if (!cfg.registryUrl) return null;
+      const labId = Number(EL.S && EL.S.labId);
+      if (!(labId >= 1 && labId <= 14)) return null;
       const ac = new AbortController();
       const tm = setTimeout(() => ac.abort(), 20000);
       try {
-        const r = await fetch(base + "/chat/completions", {
-          method: "POST", signal: ac.signal,
-          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + j.apiKey },
-          body: JSON.stringify({ model, temperature: 0.4, messages: [{ role: "system", content: this.systemPrompt() }, ...history.slice(-8)] })
+        const url = cfg.registryUrl + (String(cfg.registryUrl).indexOf("?") >= 0 ? "&" : "?") + "action=ai";
+        const r = await fetch(url, {
+          method: "POST",
+          signal: ac.signal,
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "ai", clientId: this.clientId(), labId: labId, messages: this.packMessages(history) })
         });
-        if (!r.ok) throw new Error("http");
+        if (!r.ok) return null;
         const data = await r.json();
-        const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-        return text ? String(text).trim() : null;
+        if (!data || data.ok !== true || !data.text) return null;
+        return String(data.text).trim();
+      } catch (e) {
+        return null;
       } finally { clearTimeout(tm); }
     },
     async ask(q) {
@@ -1156,8 +1184,8 @@ CURRENT STATE (do not recite it): ${this.context()}`;
       const history = this.bag().filter(m => m.role === "user" || m.role === "assistant").map(m => ({ role: m.role, content: m.content }));
       let text = null, netFail = false, usedNet = false;
       try { text = await this.tryClaude(history); if (text) usedNet = true; } catch (e) { text = null; }
-      if (!text && TJ.load().apiKey) {
-        try { text = await this.tryApi(history); if (text) usedNet = true; } catch (e) { netFail = true; text = null; }
+      if (!text) {
+        try { text = await this.tryProxy(history); if (text) usedNet = true; else netFail = true; } catch (e) { netFail = true; text = null; }
       }
       if (!text) { try { text = this.offline(q); } catch (e) { console.warn(e); text = tr("h_check"); } }
       if (netFail) text += "\n\n" + tr("ai_netfail");
@@ -1198,13 +1226,13 @@ CURRENT STATE (do not recite it): ${this.context()}`;
     offline(q) {
       const L = EL.lab(), ld = EL.LD(), g = guide(L.id);
       const n = norm(q);
-      const fish = /javobni (ayt|ber)|tayyor javob|nechchi|qancha chiq|sonini ayt|скажи ответ|готовый ответ|сколько получ|какое число|tell me the answer|correct answer|give the number|what is the value/.test(n);
+      const fish = /javobini ayt|javobni (ayt|ber)|tayyor (javob|son)|nechchi|necha chiq|qancha chiq|sonini ayt|hisoblab ber|aniq javob|to'g'ri javob|скажи ответ|дай ответ|посчитай|сколько (получ|будет|равно)|какое число|tell me the answer|correct answer|give (me )?the (number|answer|value)|what is the (value|answer)|solve it|calculate (it|the)/.test(n);
       const live = liveRead();
       const series = (L.series || []).map(s => `${s.name}: ${(ld.meas[s.id] || []).length}/${s.min}`).join("\n");
       let task = null;
       try { task = matchTask(L, n); } catch (e) { task = null; }
       const bits = [];
-      if (fish) bits.push(lang() === "ru" ? "Готовое число не даю." : lang() === "en" ? "I will not give the finished number." : "Tayyor sonni bermayman.");
+      if (fish) bits.push(lang() === "ru" ? "Готовое число не назову. Следующий шаг: запишите формулу, подставьте величины с приборов и проверьте единицу." : lang() === "en" ? "I will not state the finished number. Next step: write the formula, take the quantities from the instruments, and check the unit." : "Tayyor javobni aytmayman. Keyingi qadam: formulani yozing, kattaliklarni asbobdan oling va birlikni tekshiring.");
       if (task) {
         bits.push(formulaOf(L.id, task.id));
         const s = ld.calc && ld.calc[task.id];
@@ -1220,7 +1248,7 @@ CURRENT STATE (do not recite it): ${this.context()}`;
       if (ld.step === 4) {
         if (!task && g) bits.push(tx(g.meas));
         if (series) bits.push(series);
-        if (live) bits.push((lang() === "ru" ? "Сейчас приборы показывают: " : lang() === "en" ? "The instruments now read: " : "Hozir asboblar: ") + live);
+        if (live && !fish) bits.push((lang() === "ru" ? "Снимите с приборов и запишите сами: " : lang() === "en" ? "Read these on the instruments and write them yourself: " : "Asbobdan o‘zingiz yozing: ") + live);
       }
       if ((ld.step === 2 || ld.step === 3) && g) bits.push(tx(g.meas));
       return bits.filter(Boolean).join("\n\n");

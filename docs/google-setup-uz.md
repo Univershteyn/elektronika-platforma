@@ -118,7 +118,21 @@ Reestrda talaba bahosi yo‘q. Unda faqat 6 belgili kod va o‘qituvchining `/ex
 
 9. Shu havola `templateUrl` da turadi. O‘qituvchi panelidagi **Jadval nusxasini olish** shu manzilni ochadi.
 
-Shu bilan eganing ishi tugaydi. Bir o‘qituvchi hisobi bilan pastdagi qadamlarni o‘zingiz bir marta yurib ko‘rsangiz, namuna skriptni olib o‘tganini bilasiz.
+Shu bilan jurnal sozlamasi tugaydi. AI maslahatchi alohida, faqat sizda.
+
+### 8. AI maslahatchi (faqat ega)
+
+Talaba va o‘qituvchi kalit kiritmaydi. Kalit sayt faylida ham yo‘q. Maslahatchi shu reestr skripti orqali javob oladi. Ishlamasa, saytdagi ichki maslahatchi javob beradi.
+
+1. Bepul kalit oling: [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+2. Reestr jadvalida **Kengaytmalar → Apps Script**. Sozlama tishli g‘ildiragi: **Настройки проекта** → **Свойства скрипта**. Yangi xossa: nomi `GEMINI_API_KEY`, qiymati — olingan kalit. Kalitni boshqa joyga nusxalamang.
+3. Skript oynasidagi kodni `docs/registry-apps-script.gs` dagi yangi matn bilan almashtiring va saqlang.
+4. `/exec` manzili o‘zgarmasligi uchun yangi joylashtirish emas, mavjudini yangilang: **Начать развертывание** → **Управление развертываниями** → qalamcha (tahrirlash) → Version **Новая версия** → **Начать развертывание**.
+5. Birinchi AI chaqiruvida Google **UrlFetchApp** (tashqi manzilga chiqish) uchun yangi ruxsat so‘raydi. Buni tasdiqlang. Shu ruxsatsiz modelga murojaat ketmaydi va sayt ichki maslahatchiga qaytadi.
+
+`registryUrl` o‘sha `/exec` bo‘lib qoladi. Saytni qayta yozish shart emas.
+
+Skript yana yangilandi: model tayyor sonni aytmaydi, faqat yo‘nalish beradi. Mijoz yuborgan `system` xabari tashlanadi. Shu yangi `docs/registry-apps-script.gs` ni qayta joylab, **Новая версия** qilib yana deploy qiling. Aks holda eski joylashtirish ishlayveradi.
 
 ## Tasdiqlanmagan ilova — ega va o‘qituvchi uchun bir xil
 
