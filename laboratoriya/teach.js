@@ -427,6 +427,7 @@
       catch (e) { console.warn(e); return false; }
     },
     snapshot() {
+      if (window.ELAB_AUTH && typeof window.ELAB_AUTH.allowJournal === "function" && !window.ELAB_AUTH.allowJournal()) return;
       const S = EL.S;
       if (!S || !S.student || !nid(S.student.id)) return;
       const j = this.load();
