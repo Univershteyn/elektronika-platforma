@@ -29,7 +29,7 @@
       tp_del: "O‘chirish", tp_confirm: "«{n}» yozuvi jurnaldan o‘chirilsinmi?", tp_note: "O‘qituvchi izohi",
       tp_save: "Saqlash", tp_pwchange: "Parolni almashtirish", tp_pwnew: "Yangi parol (kamida 6 belgi)",
       tp_pwshort: "Parol kamida 6 belgidan iborat bo‘lsin.", tp_pwok: "Yangi parol saqlandi (faqat shu brauzerda).",
-      tp_avg: "O‘rtacha", tp_legend: "Katakdagi son — yakuniy ball. Ko‘k raqam — joriy bosqich (1 kirish testi … 7 hisobot).",
+      tp_avg: "O‘rtacha", tp_legend: "Katakdagi son — 5 balllik baho (5 a‘lo, 4 yaxshi, 3 qoniqarli, 2 qoniqarsiz). Ko‘k raqam — joriy bosqich.",
       tp_filter: "Guruh", tp_all: "Barchasi", tp_open: "Batafsil", tp_back: "Jadvalga qaytish",
       tp_imp_res: "Import: {ok} ta qabul qilindi, {bad} ta nazorat yig‘indisi mos kelmadi, {fail} ta o‘qilmadi.",
       tp_imp_ok: "tekshirilgan", tp_imp_bad: "yig‘indi mos emas",
@@ -176,6 +176,26 @@
   function gradeText(i) {
     const g = (EL.GRADES && (EL.GRADES[lang()] || EL.GRADES.uz)) || [];
     return g[i] || "";
+  }
+  function shownPoint(lab) {
+    if (!lab) return null;
+    if (lab.gradeOverride >= 2 && lab.gradeOverride <= 5) return lab.gradeOverride;
+    if (lab.gradePoint >= 2 && lab.gradePoint <= 5) return lab.gradePoint;
+    if (lab.baho && lab.baho.mark >= 2) return lab.baho.mark;
+    if (lab.gradePoint == null && lab.grade === 0) return 5;
+    if (lab.gradePoint == null && lab.grade === 1) return 4;
+    if (lab.gradePoint == null && lab.grade === 2) return 3;
+    if (lab.gradePoint == null && lab.grade === 3) return 2;
+    return null;
+  }
+  function pointWord(n) {
+    const row = (EL.MEZON || []).find(x => x.n === n);
+    return row ? row.w : "";
+  }
+  function applyPoint(lab, n) {
+    lab.gradePoint = n;
+    lab.gradeWord = pointWord(n);
+    lab.grade = n === 5 ? 0 : n === 4 ? 1 : n === 3 ? 2 : 3;
   }
   function fmtVal(v) {
     if (typeof v === "number" && isFinite(v)) {
@@ -442,7 +462,18 @@
       if (S.labId) {
         const L = EL.LABS.find(x => x.id === S.labId);
         const ld = S.labs && S.labs[S.labId];
-        if (L && L.ready && ld) rec.labs[L.id] = this.labSnap(L, ld);
+        if (L && L.ready && ld) {
+          const prev = rec.labs[L.id];
+          const snap = this.labSnap(L, ld);
+          if (prev && prev.gradeOverride >= 2 && prev.gradeOverride <= 5) {
+            snap.gradeOverride = prev.gradeOverride;
+            snap.gradePoint = prev.gradeOverride;
+            const row = (EL.MEZON || []).find(x => x.n === prev.gradeOverride);
+            if (row) snap.gradeWord = row.w;
+            snap.grade = prev.gradeOverride === 5 ? 0 : prev.gradeOverride === 4 ? 1 : prev.gradeOverride === 3 ? 2 : 3;
+          }
+          rec.labs[L.id] = snap;
+        }
       }
       j.students[id] = rec;
       this.save(j);
@@ -469,9 +500,16 @@
           });
           if (ld.t1) {
             const sc = EL.Plus.score(L, ld);
+            const b = EL.baho(L, ld);
             snap.score = sc.score;
-            snap.grade = EL.grade(sc.score);
+            snap.baho = b;
+            snap.criteria = b.items;
+            snap.gradeAuto = b.mark;
+            snap.gradePoint = b.mark;
+            snap.gradeWord = b.word;
+            snap.grade = b.mark === 5 ? 0 : b.mark === 4 ? 1 : b.mark === 3 ? 2 : 3;
             snap.parts = { pre: sc.pre, post: sc.post, meas: sc.meas, calc: sc.calc, acc: sc.acc };
+            snap.qaror = String(ld.qaror || "").slice(0, 2000);
           }
         } catch (e) { console.warn(e); }
         finally { EL.V = prev; }
@@ -544,7 +582,8 @@
         let sum = 0, n = 0;
         for (let i = 1; i <= 14; i++) {
           const lab = r.labs && r.labs[i];
-          if (lab && lab.done && lab.score != null) { cells.push(String(lab.score)); sum += lab.score; n++; }
+          const pt = shownPoint(lab);
+          if (lab && lab.done && pt != null) { cells.push(String(pt)); sum += pt; n++; }
           else if (lab) cells.push(String(lab.step || "·"));
           else cells.push("—");
         }
@@ -649,7 +688,8 @@
           const cells = [];
           for (let i = 1; i <= 14; i++) {
             const lab = r.labs && r.labs[i];
-            if (lab && lab.done && lab.score != null) { sum += lab.score; n++; cells.push(`<td class="jcell done" title="${esc(gradeText(lab.grade))}">${lab.score}</td>`); }
+            const pt = shownPoint(lab);
+            if (lab && lab.done && pt != null) { sum += pt; n++; cells.push(`<td class="jcell done" title="${esc(pointWord(pt) + (lab.gradeOverride ? " · o‘qituvchi" : "") + (lab.score != null ? " · ball " + lab.score : ""))}">${pt}</td>`); }
             else if (lab) cells.push(`<td class="jcell prog" title="${esc(stepName(lab.step))}">${lab.step}</td>`);
             else cells.push(`<td class="jcell">—</td>`);
           }
@@ -675,7 +715,12 @@
           const lab = r.labs[id];
           const title = lab.title && lab.title[lang()] || (lab.title && lab.title.uz) || "";
           const calc = (lab.calc || []).map(c => `<tr><td style="text-align:left">${esc(c.q)}</td><td>${esc(fmtVal(c.val))} ${esc(c.unit || "")}</td><td>${c.tries || 0}</td><td class="${c.ok ? "okc" : "bad"}">${c.ok ? "✔" : (c.tries ? "✘" : "—")}</td></tr>`).join("");
-          return `<div class="card"><b>${id}. ${esc(title)}</b><br>${lab.done ? `<span class="tag ok">${esc(tr("tp_done"))}</span>` : `<span class="tag info">${esc(stepName(lab.step))}</span>`} ${lab.score != null ? `<b>${lab.score}</b> ${esc(gradeText(lab.grade))}` : ""}<br><small>${esc(tr("tp_tests"))}: ${lab.preOk == null ? "—" : lab.preOk + "/" + lab.preN} · ${lab.postOk == null ? "—" : lab.postOk + "/" + lab.postN}</small>${calc ? `<table class="tt" style="margin-top:6px"><tr><th>${esc(tr("h_formula"))}</th><th>${esc(tr("tp_score"))}</th><th></th><th></th></tr>${calc}</table>` : ""}</div>`;
+          const pt = shownPoint(lab);
+          const text = (EL.MEZON || []).find(x => x.n === pt);
+          const items = (lab.baho && lab.baho.items) || lab.criteria || [];
+          const checks = items.map(it => `<li class="${it.met ? "baho-ok" : "baho-no"}">${it.met ? "✔" : "✘"} ${esc(it.name)} — ${esc(it.detail || "")}</li>`).join("");
+          const ov = lab.gradeOverride || "";
+          return `<div class="card"><b>${id}. ${esc(title)}</b><br>${lab.done ? `<span class="tag ok">${esc(tr("tp_done"))}</span>` : `<span class="tag info">${esc(stepName(lab.step))}</span>`} ${pt != null ? `<b>${pt} — ${esc(pointWord(pt))}</b>` : ""} ${lab.score != null ? `<small>ball ${lab.score}</small>` : ""}${lab.gradeOverride ? ` <span class="tag warn">o‘qituvchi</span>` : ""}<br><small>${esc(tr("tp_tests"))}: ${lab.preOk == null ? "—" : lab.preOk + "/" + lab.preN} · ${lab.postOk == null ? "—" : lab.postOk + "/" + lab.postN}</small>${text ? `<p>${esc(text.t)}</p>` : ""}${checks ? `<ul class="baho-list">${checks}</ul>` : ""}<label>Baho <select data-ov="${esc(String(id))}"><option value="" ${ov === "" ? "selected" : ""}>Avtomatik${lab.gradeAuto ? " (" + lab.gradeAuto + ")" : ""}</option>${[5, 4, 3, 2].map(n => `<option value="${n}" ${String(ov) === String(n) ? "selected" : ""}>${n} ${esc(pointWord(n))}</option>`).join("")}</select></label>${calc ? `<table class="tt" style="margin-top:6px"><tr><th>${esc(tr("h_formula"))}</th><th>${esc(tr("tp_score"))}</th><th></th><th></th></tr>${calc}</table>` : ""}</div>`;
         }).join("");
         pane.innerHTML = `<button type="button" class="sec" id="tBack">${esc(tr("tp_back"))}</button>
           <h3 style="margin:10px 0 4px">${esc(r.name)}</h3><p style="color:#94a3b8">${esc(r.group)} · ID ${esc(r.id)} · AI: ${r.ai || 0}</p>
@@ -686,6 +731,18 @@
         document.getElementById("tNoteSave").onclick = () => { const j = this.store(); j.students[r.id && nid(r.id)].note = document.getElementById("tNote").value.slice(0, 2000); TJ.save(j); };
         document.getElementById("tPdf1").onclick = () => PDF.student(this.store().students[this.sel]);
         document.getElementById("tDel").onclick = () => { if (!confirm(tr("tp_confirm", { n: r.name }))) return; const j = this.store(); delete j.students[this.sel]; TJ.save(j); this.sel = null; this.render(); };
+        pane.querySelectorAll("[data-ov]").forEach(sel => sel.onchange = () => {
+          const j = this.store();
+          const rec = j.students[this.sel];
+          const lab = rec && rec.labs && rec.labs[sel.dataset.ov];
+          if (!lab) return;
+          if (!sel.value) delete lab.gradeOverride;
+          else lab.gradeOverride = +sel.value;
+          const n = lab.gradeOverride || lab.gradeAuto;
+          if (n) applyPoint(lab, n);
+          TJ.save(j);
+          this.render();
+        });
         return;
       }
       pane.innerHTML = `<div class="tscroll"><table class="tt"><thead><tr><th>${esc(tr("tp_student"))}</th><th>${esc(tr("tp_status"))}</th><th>${esc(tr("tp_steps"))}</th><th>${esc(tr("tp_score"))}</th><th>${esc(tr("tp_updated"))}</th><th></th></tr></thead><tbody>
@@ -740,6 +797,7 @@
           <button type="button" data-yjump="y8">8. Yangilash</button>
           <button type="button" data-yjump="y9">9. Parol</button>
           <button type="button" data-yjump="y10">10. Xatolar</button>
+          <button type="button" data-yjump="yMez">Mezon</button>
         </div>
 
         <h3 id="y1">1. Saytga va panelga kirish</h3>
@@ -834,6 +892,25 @@
           <li><span class="ybtn">Jurnal</span> dagi <span class="ybtn">Chiqish</span> panelni yopadi. Keyingi safar yangi parol so‘raladi.</li>
         </ol>
         <p><span class="ybtn">Yangi kod</span> eski 6 belgini bekor qiladi. Jadvaldagi yozuvlar qoladi. Talabalarga yangi kodni bering.</p>
+
+        <h3 id="yMez">Baholash mezoni (5–2)</h3>
+        <p>Har bir laboratoriya shu mezon bilan baholanadi. Talaba hisobotda baho, matn va qaysi band bajarilganini ko‘radi. Siz Talabalar bo‘limida bahoni o‘zgartira olasiz.</p>
+        <p><b>5 — a‘lo.</b> Talaba fanning mohiyatini to‘liq tushunadi, biladi, ifodalay oladi, aytib beradi, tasavvurga ega, mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, ijodiy fikrlaydi hamda mustaqil xulosa va qaror qabul qiladi.</p>
+        <p><b>4 — yaxshi.</b> Talaba mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
+        <p><b>3 — qoniqarli.</b> Talaba olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
+        <p><b>2 — qoniqarsiz.</b> Talaba fan dasturini o‘zlashtirmagan, fanning mohiyatini tushunmaydi hamda tasavvurga ega emas.</p>
+        <ul class="baho-list">
+          <li><b>Biladi</b> — kirish testi kamida 60 %.</li>
+          <li><b>Tushunadi</b> — yakuniy test kamida 60 %.</li>
+          <li><b>To‘liq tushunadi</b> — ikkala test o‘rtacha kamida 80 % (faqat 5 uchun).</li>
+          <li><b>Ifodalay oladi, aytib beradi</b> — ikkala test yakunlangan.</li>
+          <li><b>Tasavvurga ega</b> — nazariya ochilgan va testlarning yarmi to‘g‘ri.</li>
+          <li><b>Amalda qo‘llay oladi</b> — sxema yig‘ilgan va barcha o‘lchov seriyalari yetarli.</li>
+          <li><b>Mustaqil mushohada</b> — hisoblarning kamida 75 % i ±5 % da to‘g‘ri (4 va 5 uchun).</li>
+          <li><b>Ijodiy fikrlaydi</b> — «Mustaqil qaror» maydoni kamida 40 belgi (5 uchun).</li>
+          <li><b>Mustaqil xulosa va qaror</b> — xulosa kamida 60 belgi va qaror kamida 40 belgi (5 uchun).</li>
+        </ul>
+        <p>5 uchun shu bandlarning hammasi kerak. 4 uchun mushohada va amaliyot, lekin to‘liq tushunish va ijodiy qaror shart emas. 3 uchun amaliyot va tushuncha yetadi, mushohada shart emas. Qolgan hollarda baho 2.</p>
 
         <h3 id="y10">10. Tez-tez chiqadigan xatolar</h3>
         <p><span class="ybtn">Google tugmasi yo‘q.</span> Ega hali client ID qo‘ymagan. Lokal jurnal ishlaydi. Mehmon jurnalga yozmaydi.</p>

@@ -410,6 +410,8 @@
       rec.group = row.kurs + "-kurs, " + row.guruh + "-guruh";
       rec.email = row.email;
       rec.google = true;
+      const prevLab = rec.labs[row.lab.id];
+      if (prevLab && prevLab.gradeOverride != null && row.lab.gradeOverride == null) row.lab.gradeOverride = prevLab.gradeOverride;
       rec.labs[row.lab.id] = row.lab;
       rec.last = row.lab.updated || Date.now();
       j.students[id] = rec;

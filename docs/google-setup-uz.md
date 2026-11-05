@@ -205,6 +205,34 @@ Internet uzilsa, ish shu brauzerda davom etadi. Ulanish qaytganida natija qayta 
 5. **Chiqish** panelni qulflaydi.
 6. **Yangi kod** eski kodni bekor qiladi. Jadvaldagi yozuvlar qoladi. Talabaga yangi kodni bering.
 
+## Baholash mezoni (5–2)
+
+Har bir laboratoriya shu mezon bilan baholanadi. Talaba hisobotda baho, rasmiy matn va bajarilgan yoki yetishmagan bandlarni ko‘radi. O‘qituvchi panelining **Talabalar** bo‘limida bahoni o‘zgartira oladi. Mehmon ham bahoni ko‘radi, lekin u jurnalga yozilmaydi.
+
+**5 — a‘lo.** Talaba fanning mohiyatini to‘liq tushunadi, biladi, ifodalay oladi, aytib beradi, tasavvurga ega, mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, ijodiy fikrlaydi hamda mustaqil xulosa va qaror qabul qiladi.
+
+**4 — yaxshi.** Talaba mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.
+
+**3 — qoniqarli.** Talaba olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.
+
+**2 — qoniqarsiz.** Talaba fan dasturini o‘zlashtirmagan, fanning mohiyatini tushunmaydi hamda tasavvurga ega emas.
+
+| Mezon | Ishdan olinadigan dalil |
+| --- | --- |
+| Biladi | Kirish testi kamida 60 % |
+| Tushunadi | Yakuniy test kamida 60 % |
+| To‘liq tushunadi | Ikkala test o‘rtacha kamida 80 % (faqat 5) |
+| Ifodalay oladi, aytib beradi | Ikkala test yakunlangan |
+| Tasavvurga ega | Nazariya ochilgan va testlarning yarmi to‘g‘ri |
+| Amalda qo‘llay oladi | Sxema yig‘ilgan va barcha o‘lchov seriyalari yetarli |
+| Mustaqil mushohada | Hisoblarning kamida 75 % i ±5 % da to‘g‘ri (4 va 5) |
+| Ijodiy fikrlaydi | «Mustaqil qaror» kamida 40 belgi (5) |
+| Mustaqil xulosa va qaror | Xulosa kamida 60 belgi va qaror kamida 40 belgi (5) |
+
+5 uchun jadvaldagi bandlarning hammasi kerak. 4 da to‘liq tushunish va ijodiy qaror shart emas. 3 da mushohada ham shart emas. Qolgan hollarda baho 2.
+
+Jadvaldagi `grade` ustuni endi 5, 4, 3 yoki 2. Qo‘shimcha ustunlar (oxiriga qo‘shiladi, eski ustunlar siljmaydi): `gradeWord`, `criteria`, `gradeOverride`, `gradeAuto`. To‘liq yozuv avvalgidek `labJson` ichida. Namuna jadvaldagi skriptni yangilab, **yangi versiya** qilib qayta joylang. Allaqachon nusxa olgan o‘qituvchi ham o‘z nusxasidagi skriptni yangilashi kerak.
+
 ## Xatolar
 
 **Google tugmasi yo‘q.** Ega client ID qo‘ymagan yoki sayt yangilanmagan.

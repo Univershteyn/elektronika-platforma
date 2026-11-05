@@ -63,9 +63,11 @@ function result_(p) {
     var row = [
       key, info.sub, info.email, String(p.ism || ""), String(p.familiya || ""),
       String(p.kurs || ""), String(p.guruh || ""), labId,
-      new Date().toISOString(), lab.score == null ? "" : lab.score, lab.grade == null ? "" : lab.grade,
+      new Date().toISOString(), lab.score == null ? "" : lab.score, lab.gradePoint == null ? (lab.grade == null ? "" : lab.grade) : lab.gradePoint,
       lab.step || "", lab.done ? 1 : 0, lab.preOk == null ? "" : lab.preOk, lab.postOk == null ? "" : lab.postOk,
-      JSON.stringify(lab.calc || []), String(lab.concl || "").slice(0, 2000), JSON.stringify(lab)
+      JSON.stringify(lab.calc || []), String(lab.concl || "").slice(0, 2000), JSON.stringify(lab),
+      String(lab.gradeWord || ""), JSON.stringify(lab.criteria || lab.baho && lab.baho.items || []),
+      lab.gradeOverride == null ? "" : lab.gradeOverride, lab.gradeAuto == null ? "" : lab.gradeAuto
     ];
     if (rowNum) sh.getRange(rowNum, 1, 1, row.length).setValues([row]);
     else sh.appendRow(row);
@@ -120,8 +122,14 @@ function sheet_() {
   var ss = SpreadsheetApp.getActive();
   var sh = ss.getSheetByName("Jurnal");
   if (!sh) sh = ss.insertSheet("Jurnal");
-  if (sh.getLastRow() < 1) {
-    sh.appendRow(["key", "sub", "email", "ism", "familiya", "kurs", "guruh", "lab", "updated", "score", "grade", "step", "done", "pre", "post", "calc", "concl", "labJson"]);
+  var want = ["key", "sub", "email", "ism", "familiya", "kurs", "guruh", "lab", "updated", "score", "grade", "step", "done", "pre", "post", "calc", "concl", "labJson", "gradeWord", "criteria", "gradeOverride", "gradeAuto"];
+  if (sh.getLastRow() < 1) sh.getRange(1, 1, 1, want.length).setValues([want]);
+  else {
+    var width = Math.max(sh.getLastColumn(), want.length);
+    var header = sh.getRange(1, 1, 1, width).getValues()[0];
+    for (var c = 0; c < want.length; c++) {
+      if (!header[c]) sh.getRange(1, c + 1).setValue(want[c]);
+    }
   }
   return sh;
 }
