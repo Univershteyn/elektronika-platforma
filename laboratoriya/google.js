@@ -93,7 +93,32 @@
     async list(url, token) {
       const r = await jsonp(url, { action: "list", idToken: token });
       if (!r || !r.ok) throw new Error((r && r.error) || "Ro‘yxat olinmadi");
-      return r.rows || [];
+      return r;
+    },
+    async teacher(token) {
+      if (!CFG.registryUrl) return { ok: false, error: "none" };
+      const r = await jsonp(CFG.registryUrl, { action: "teacher", idToken: token });
+      return r || { ok: false, error: "none" };
+    },
+    async link(code, token) {
+      if (!CFG.registryUrl) throw new Error("Sinf kodi hali ulanmagan. Sayt egasi reestrni qo‘yadi.");
+      const r = await jsonp(CFG.registryUrl, { action: "link", code: code, idToken: token });
+      return r || { ok: false, error: "link" };
+    },
+    async mark(url, token, sub, lab, gradeOverride) {
+      const r = await jsonp(url, { action: "mark", idToken: token, sub: sub, lab: lab, gradeOverride: gradeOverride == null ? "" : gradeOverride });
+      return r || { ok: false, error: "mark" };
+    },
+    async note(url, token, sub, note) {
+      const r = await jsonp(url, { action: "note", idToken: token, sub: sub, note: note });
+      return r || { ok: false, error: "note" };
+    },
+    async drop(url, token, sub) {
+      const r = await jsonp(url, { action: "drop", idToken: token, sub: sub });
+      return r || { ok: false, error: "drop" };
+    },
+    async gradeOf(url, token, code, lab) {
+      return jsonp(url, { action: "get", code: code, lab: lab, idToken: token });
     }
   };
   const mock = {
@@ -111,18 +136,56 @@
       Object.keys(m.registry).forEach(k => {
         if (m.registry[k].email === info.email && k !== code) delete m.registry[k];
       });
-      m.registry[code] = { url: url, email: info.email, name: info.name || info.email };
+      m.registry[code] = { url: url, email: info.email, sub: info.sub, name: info.name || info.email };
       saveMock(m);
       return { ok: true, code: code, url: url };
+    },
+    async teacher(token) {
+      const info = jwtPayload(token);
+      const m = loadMock();
+      const code = Object.keys(m.registry).find(c => {
+        const row = m.registry[c];
+        return row && ((row.sub && row.sub === info.sub) || (row.email && row.email === info.email));
+      });
+      if (!code) return { ok: false, error: "none" };
+      const row = m.registry[code];
+      if (!row.sub) { row.sub = info.sub; row.email = row.email || info.email; saveMock(m); }
+      return { ok: true, code: code, url: row.url, teacherName: row.name, teacherEmail: row.email, sub: row.sub || info.sub };
+    },
+    async link(code, token) {
+      const info = jwtPayload(token);
+      const m = loadMock();
+      code = String(code || "").toUpperCase();
+      const row = m.registry[code];
+      if (!row) return { ok: false, error: "code" };
+      if (row.sub && row.sub === info.sub) return { ok: true, code: code, url: row.url, teacherName: row.name, teacherEmail: row.email, sub: row.sub };
+      if (row.email && row.email === info.email) {
+        row.sub = info.sub;
+        saveMock(m);
+        return { ok: true, code: code, url: row.url, teacherName: row.name, teacherEmail: row.email, sub: row.sub };
+      }
+      if (row.email && row.email !== info.email) return { ok: false, error: "taken" };
+      const owner = m.sheets[code] && m.sheets[code].email;
+      if (!owner) return { ok: false, error: "whoami" };
+      if (owner !== info.email) return { ok: false, error: "owner" };
+      row.email = info.email;
+      row.sub = info.sub;
+      row.name = info.name || row.name || info.email;
+      saveMock(m);
+      return { ok: true, code: code, url: row.url, teacherName: row.name, teacherEmail: row.email, sub: row.sub };
     },
     async setup(url, code, token) {
       const info = jwtPayload(token);
       const m = loadMock();
-      let rows = {};
+      let rows = {}, notes = {};
       Object.keys(m.sheets).forEach(c => {
-        if (m.sheets[c].email === info.email) { Object.assign(rows, m.sheets[c].rows || {}); delete m.sheets[c]; }
+        if (m.sheets[c].email === info.email) {
+          Object.assign(rows, m.sheets[c].rows || {});
+          Object.assign(notes, m.sheets[c].notes || {});
+          delete m.sheets[c];
+        }
       });
-      m.sheets[code] = { email: info.email, clientId: CFG.clientId || "mock", rows: rows };
+      m.sheets[code] = { email: info.email, clientId: CFG.clientId || "mock", rows: rows, notes: notes };
       saveMock(m);
       return { ok: true };
     },
@@ -141,10 +204,53 @@
     async list(url, token) {
       const info = jwtPayload(token);
       const m = loadMock();
-      const code = Object.keys(m.registry).find(c => m.registry[c].email === info.email && m.registry[c].url === url)
-        || Object.keys(m.sheets).find(c => m.sheets[c].email === info.email);
-      if (!code || !m.sheets[code]) return [];
-      return Object.values(m.sheets[code].rows);
+      const code = Object.keys(m.registry).find(c => {
+        const row = m.registry[c];
+        return row && (row.url === url || String(url).indexOf(c) >= 0) && (row.email === info.email || row.sub === info.sub);
+      }) || Object.keys(m.sheets).find(c => m.sheets[c].email === info.email);
+      if (!code || !m.sheets[code]) return { ok: true, rows: [], marks: true, notes: {} };
+      return { ok: true, rows: Object.values(m.sheets[code].rows || {}), marks: true, notes: m.sheets[code].notes || {} };
+    },
+    async mark(url, token, sub, lab, gradeOverride) {
+      const info = jwtPayload(token);
+      const m = loadMock();
+      const code = Object.keys(m.sheets).find(c => m.sheets[c].email === info.email);
+      if (!code) return { ok: false, error: "teacher" };
+      const row = m.sheets[code].rows[sub + "|" + lab];
+      if (!row || !row.lab) return { ok: false, error: "row" };
+      if (gradeOverride === "" || gradeOverride == null) delete row.lab.gradeOverride;
+      else row.lab.gradeOverride = Number(gradeOverride);
+      saveMock(m);
+      return { ok: true };
+    },
+    async note(url, token, sub, note) {
+      const info = jwtPayload(token);
+      const m = loadMock();
+      const code = Object.keys(m.sheets).find(c => m.sheets[c].email === info.email);
+      if (!code) return { ok: false, error: "teacher" };
+      m.sheets[code].notes = m.sheets[code].notes || {};
+      m.sheets[code].notes[sub] = String(note || "").slice(0, 2000);
+      saveMock(m);
+      return { ok: true };
+    },
+    async drop(url, token, sub) {
+      const info = jwtPayload(token);
+      const m = loadMock();
+      const code = Object.keys(m.sheets).find(c => m.sheets[c].email === info.email);
+      if (!code) return { ok: false, error: "teacher" };
+      Object.keys(m.sheets[code].rows || {}).forEach(k => { if (k.indexOf(sub + "|") === 0) delete m.sheets[code].rows[k]; });
+      if (m.sheets[code].notes) delete m.sheets[code].notes[sub];
+      saveMock(m);
+      return { ok: true };
+    },
+    async gradeOf(url, token, code, lab) {
+      const info = jwtPayload(token);
+      const m = loadMock();
+      const sh = m.sheets[String(code || "").toUpperCase()];
+      if (!sh) return { ok: false, error: "code" };
+      const row = sh.rows[info.sub + "|" + lab];
+      if (!row || !row.lab) return { ok: true, found: false };
+      return { ok: true, found: true, score: row.lab.score, gradeOverride: row.lab.gradeOverride == null ? null : row.lab.gradeOverride };
     }
   };
   const api = () => MOCK ? mock : net;
@@ -214,7 +320,15 @@
       </div>`;
     document.body.appendChild(el);
     document.getElementById("gGuest").onclick = () => { state.mode = "guest"; state.student = null; save(state); paint(); };
-    document.getElementById("gAsTeacher").onclick = () => { state.mode = "teacher"; save(state); paint(); };
+    document.getElementById("gAsTeacher").onclick = async () => {
+      state.mode = "teacher";
+      state.student = null;
+      save(state);
+      paint();
+      await ensureTeacher();
+      paint();
+      if (window.TEACH && window.TEACH.Teacher) window.TEACH.Teacher.open();
+    };
     document.getElementById("gAsStudent").onclick = () => { state.mode = "student"; save(state); paint(); };
     document.getElementById("gBack").onclick = () => { state.mode = null; save(state); paint(); };
     document.getElementById("gJoin").onclick = () => joinStudent();
@@ -371,9 +485,65 @@
     if (!MOCK && !validExec(endpoint)) throw new Error("Manzil https://script.google.com/macros/s/…/exec bo‘lishi kerak");
     await api().setup(endpoint, code, state.account.token);
     await api().register(code, endpoint, state.account.token);
-    state.teacher = { code: code, endpoint: endpoint };
+    state.teacher = { code: code, endpoint: endpoint, linked: true };
     save(state);
     return code;
+  }
+
+  function linkText(error) {
+    if (error === "whoami") return "Jurnal skriptida egasini tasdiqlash (whoami) yo‘q. O‘z jadval nusxangizda Kengaytmalar → Apps Script kodini yangi nusxa bilan almashtiring. So‘ng Joylashtirish → Joylashtirishlarni boshqarish → qalamcha → Yangi versiya → Joylashtirish. Shundan keyin kodni shu yerga qayta yozing.";
+    if (error === "taken" || error === "owner") return "Bu kod boshqa Google hisobiga tegishli.";
+    if (error === "code") return "Kod topilmadi. 6 ta belgini tekshiring.";
+    if (error === "action") return "Reestr skripti hali yangilanmagan. Sayt egasi docs/registry-apps-script.gs ni yangi versiya qilib joylashi kerak. Shu brauzerda jurnal allaqachon ochilgan bo‘lsa, u saqlanadi.";
+    return "Bog‘lanmadi. Qayta urinib ko‘ring.";
+  }
+
+  let teacherJob = null;
+  async function ensureTeacher() {
+    if (!state.account || state.mode !== "teacher") return state.teacher || null;
+    if (!MOCK && !CFG.registryUrl) return state.teacher || null;
+    if (teacherJob) return teacherJob;
+    teacherJob = (async () => {
+      try {
+        const rec = await api().teacher(state.account.token);
+        if (rec && rec.ok && rec.code && rec.url) {
+          state.teacher = { code: rec.code, endpoint: rec.url, linked: true };
+          state.syncMsg = "";
+          save(state);
+          try { await refreshDrive(); } catch (e) { state.syncMsg = e.message || "Jadval yangilanmadi"; save(state); }
+          return state.teacher;
+        }
+        if (rec && rec.error === "action") state.syncMsg = "Reestr skripti yangilanmagan. Sayt egasi yangi nusxani joylashi kerak.";
+      } catch (e) {
+        state.syncMsg = e.message || "";
+      }
+      if (state.teacher && state.teacher.code && state.teacher.endpoint) {
+        state.teacher.linked = true;
+        save(state);
+        return state.teacher;
+      }
+      return null;
+    })();
+    try { return await teacherJob; }
+    finally { teacherJob = null; }
+  }
+
+  async function linkExisting(code) {
+    if (!state.account || state.mode !== "teacher") throw new Error("Avval o‘qituvchi sifatida Google bilan kiring");
+    const rec = await api().link(String(code || "").trim().toUpperCase(), state.account.token);
+    if (!rec || !rec.ok) {
+      const err = new Error(linkText(rec && rec.error));
+      err.code = rec && rec.error;
+      throw err;
+    }
+    state.teacher = { code: rec.code, endpoint: rec.url, linked: true };
+    save(state);
+    try { await refreshDrive(); } catch (e) { state.syncMsg = e.message || ""; }
+    return rec.code;
+  }
+
+  function legacyScript(res) {
+    return res && (res.error === "action" || res.ok === false && res.error === "action");
   }
 
   async function pushNow() {
@@ -398,33 +568,73 @@
     pushTimer = setTimeout(() => { pushNow().catch(e => console.warn(e)); }, 700);
   }
 
-  function mergeRows(rows) {
+  function applyRows(pack) {
     const TJ = window.TEACH && window.TEACH.TJ;
     if (!TJ) return 0;
+    const rows = Array.isArray(pack) ? pack : ((pack && pack.rows) || []);
+    const marks = !!(pack && pack.marks);
+    const notes = (pack && pack.notes) || {};
     const j = TJ.load();
+    if (marks) {
+      Object.keys(j.students).forEach(id => { if (j.students[id] && j.students[id].google) delete j.students[id]; });
+    }
+    const seen = {};
     rows.forEach(row => {
       if (!row || !row.sub || !row.lab) return;
       const id = nid(row.sub);
       const rec = j.students[id] || { id: row.sub, first: Date.now(), labs: {}, ai: 0, note: "" };
-      rec.name = (row.ism + " " + row.familiya).trim();
+      rec.name = ((row.ism || "") + " " + (row.familiya || "")).trim();
       rec.group = row.kurs + "-kurs, " + row.guruh + "-guruh";
       rec.email = row.email;
       rec.google = true;
-      const prevLab = rec.labs[row.lab.id];
-      if (prevLab && prevLab.gradeOverride != null && row.lab.gradeOverride == null) row.lab.gradeOverride = prevLab.gradeOverride;
+      if (!marks) {
+        const prevLab = rec.labs[row.lab.id];
+        if (prevLab && prevLab.gradeOverride != null && row.lab.gradeOverride == null) row.lab.gradeOverride = prevLab.gradeOverride;
+      }
       rec.labs[row.lab.id] = row.lab;
       rec.last = row.lab.updated || Date.now();
+      if (notes[row.sub] != null) rec.note = notes[row.sub];
       j.students[id] = rec;
+      seen[id] = true;
+    });
+    Object.keys(notes).forEach(sub => {
+      const id = nid(sub);
+      if (j.students[id]) j.students[id].note = notes[sub];
     });
     TJ.save(j);
-    return rows.length;
+    state.journalMarks = marks;
+    save(state);
+    return Object.keys(seen).length;
   }
   async function refreshDrive() {
     if (!state.account || !state.teacher) throw new Error("Avval kod oling");
-    const rows = await api().list(state.teacher.endpoint, state.account.token);
-    const n = mergeRows(rows);
+    const pack = await api().list(state.teacher.endpoint, state.account.token);
+    const n = applyRows(pack);
     if (window.TEACH && window.TEACH.Teacher && window.TEACH.Teacher.auth) window.TEACH.Teacher.render();
     return n;
+  }
+  async function saveMark(sub, lab, gradeOverride) {
+    if (!state.account || !state.teacher) return { skipped: true };
+    const res = await api().mark(state.teacher.endpoint, state.account.token, sub, lab, gradeOverride);
+    if (legacyScript(res)) return { legacy: true };
+    return res;
+  }
+  async function saveNote(sub, note) {
+    if (!state.account || !state.teacher) return { skipped: true };
+    const res = await api().note(state.teacher.endpoint, state.account.token, sub, note);
+    if (legacyScript(res)) return { legacy: true };
+    return res;
+  }
+  async function gradeOf(labId) {
+    if (!state.account || state.mode !== "student" || !state.student) return null;
+    try { return await api().gradeOf(state.student.endpoint, state.account.token, state.student.code, labId); }
+    catch (e) { return null; }
+  }
+  async function dropStudent(sub) {
+    if (!state.account || !state.teacher) return { skipped: true };
+    const res = await api().drop(state.teacher.endpoint, state.account.token, sub);
+    if (legacyScript(res)) return { legacy: true };
+    return res;
   }
 
   function teacherCard() {
@@ -432,17 +642,22 @@
     if (window.TEACH.Teacher.tab !== "journal" && window.TEACH.Teacher.tab !== "set") return;
     const pane = document.getElementById("tPane");
     if (!pane || document.getElementById("gDrive")) return;
-    const linked = state.teacher && state.teacher.code;
+    const linked = state.teacher && state.teacher.code && state.teacher.linked;
     const tpl = CFG.templateUrl ? `<a class="sec" style="display:inline-block;padding:7px 14px;border-radius:6px;text-decoration:none" target="_blank" rel="noopener" href="${esc(CFG.templateUrl)}">Jadval nusxasini olish</a>` : `<span>Namuna jadval hali ulanmagan. Sayt egasi havolani qo‘ygach, shu yerda «Jadval nusxasini olish» chiqadi. Hozircha lokal jurnal ishlaydi.</span>`;
+    const setup = `<details id="gSetup"><summary>Birinchi marta jurnal sozlayman</summary>
+        <ol style="margin:8px 0 8px 18px;color:#cbd5e1;font-size:13.5px"><li>${tpl}</li><li>Nusxada: Kengaytmalar → Apps Script → Joylashtirish → Veb-ilova. Bajarish: Men. Kirish: Hamma.</li><li>…/exec manzilini quyiga qo‘ying.</li></ol>
+        ${MOCK ? "" : `<input id="gExec" placeholder="https://script.google.com/macros/s/…/exec">`}
+        <div class="grow"><button type="button" id="gMint">${MOCK ? "Sinov kodini olish" : "Kodni olish"}</button></div></details>`;
     pane.insertAdjacentHTML("afterbegin", `<div class="gdrive" id="gDrive">
       <b>Google Drive jurnali</b>
       <p style="margin:6px 0;color:#94a3b8;font-size:13px">${state.account ? esc(state.account.email) : "Google bilan kirilmagan."} ${MOCK ? "· sinov rejimi (haqiqiy Drive emas)" : ""}</p>
       ${!MOCK && !CFG.registryUrl ? `<p>Sinf kodi hali ulanmagan. Sayt egasi reestrni qo‘yadi. Laboratoriya va lokal jurnal ishlaydi.</p>` : ""}
-      ${linked ? `<div class="gbig" id="gCodeBig">${esc(state.teacher.code)}</div><p>Shu kodni talabalarga bering. Natijalar sizning jadvalingizga tushadi.</p><div class="grow"><button type="button" id="gCopy">Kodni nusxalash</button><button type="button" class="sec" id="gPull">Google Drive dan yangilash</button><button type="button" class="sec" id="gNew">Yangi kod</button></div><p id="gDriveMsg"></p>` :
-        (state.mode === "teacher" && state.account ? `<ol style="margin:8px 0 8px 18px;color:#cbd5e1;font-size:13.5px"><li>${tpl}</li><li>Nusxada: Kengaytmalar → Apps Script → Deploy → Web app. Execute as Me, Who has access: Anyone.</li><li>…/exec manzilini quyiga qo‘ying.</li></ol>
-        ${MOCK ? "" : `<input id="gExec" placeholder="https://script.google.com/macros/s/…/exec">`}
-        <div class="grow"><button type="button" id="gMint">${MOCK ? "Sinov kodini olish" : "Kodni olish"}</button></div><p id="gDriveMsg"></p>` :
-          `<p>Kod olish uchun avval Google bilan kiring va «Men o‘qituvchiman» ni tanlang.</p><div class="grow"><button type="button" id="gOpenAuth">Google oynasini ochish</button></div>`)}
+      ${linked ? `<div class="gbig" id="gCodeBig">${esc(state.teacher.code)}</div><p>Shu kodni talabalarga bering. Talabalar va baholar Google jadvalingizdan keladi — telefon va kompyuterda bir xil.</p><div class="grow"><button type="button" id="gCopy">Kodni nusxalash</button><button type="button" class="sec" id="gPull">Jadvaldan yangilash</button><button type="button" class="sec" id="gNew">Yangi kod</button></div><p id="gDriveMsg">${esc(state.syncMsg || "")}</p>` :
+        (state.mode === "teacher" && state.account ? `<p>Bu Google hisobi hali jurnalga bog‘lanmagan. Kompyuterda olgan 6 belgili kodni bir marta yozing. Keyingi qurilmada kod so‘ralmaydi.</p>
+        <label for="gOldCode">Integratsiya kodi</label><input id="gOldCode" maxlength="12" autocapitalize="characters" placeholder="Masalan K7M2QP">
+        <div class="grow"><button type="button" id="gLink">Shu hisobga bog‘lash</button></div>
+        ${setup}<p id="gDriveMsg"></p>` :
+          `<p>Kod olish uchun avval Google bilan kiring va «Men o‘qituvchiman» ni tanlang. Google hisobi panel paroli o‘rnini bosadi.</p><div class="grow"><button type="button" id="gOpenAuth">Google oynasini ochish</button></div>`)}
     </div>`);
     const card = document.getElementById("gDrive");
     if (card && !document.getElementById("gToGuide")) {
@@ -457,6 +672,18 @@
     }
     const open = document.getElementById("gOpenAuth");
     if (open) open.onclick = () => { state.mode = null; save(state); paint(); };
+    const linkBtn = document.getElementById("gLink");
+    if (linkBtn) linkBtn.onclick = async () => {
+      const msg = document.getElementById("gDriveMsg");
+      const code = (document.getElementById("gOldCode").value || "").trim().toUpperCase();
+      if (!/^[A-Z0-9]{6}$/.test(code)) { msg.textContent = "Kod 6 ta harf yoki raqam."; return; }
+      msg.textContent = "Tekshirilmoqda…";
+      try {
+        await linkExisting(code);
+        msg.textContent = "Bog‘landi. Endi barcha qurilmalarda shu jurnal ochiladi.";
+        window.TEACH.Teacher.render();
+      } catch (e) { msg.textContent = e.message || "Xato"; }
+    };
     const mint = document.getElementById("gMint");
     if (mint) mint.onclick = async () => {
       const msg = document.getElementById("gDriveMsg");
@@ -523,7 +750,12 @@
       const t0 = window.TEACH.Teacher.render.bind(window.TEACH.Teacher);
       window.TEACH.Teacher.render = function () { t0(); teacherCard(); };
     }
-    window.ELAB_AUTH = { allowJournal, signInMock, signOut, createCode, pushNow, refreshDrive, joinStudent, get state() { return state; }, mock: MOCK };
+    window.ELAB_AUTH = {
+      allowJournal, signInMock, signOut, createCode, pushNow, refreshDrive, joinStudent, ensureTeacher, linkExisting, saveMark, saveNote, dropStudent, gradeOf,
+      openGate() { state.mode = null; picking = false; save(state); paint(); },
+      get state() { return state; }, mock: MOCK
+    };
+    if (state.mode === "teacher" && state.account) ensureTeacher();
     const start = () => paint();
     if (document.getElementById("gate")) {
       const obs = new MutationObserver(() => { if (!document.getElementById("gate")) { obs.disconnect(); start(); } });

@@ -10,6 +10,7 @@
   if (!EL) { console.warn("ELAB bridge missing"); return; }
 
   const DEFH = "46a72ff6bd9d9c6645cd949f7005bf06af1698804c7d895f42ef8da711fbdd66";
+  const LEGACY_SYNC = "Jurnal skriptingiz eski. Baho va izoh hozircha shu brauzerda qoladi. O‘z jadval nusxangizdagi Apps Scriptni yangilab, yangi versiya qilib joylang — shunda barcha qurilmalarda bir xil bo‘ladi.";
   const KEY = "elektronika_teach_v1";
   const STEPS = ["", "s1", "s2", "s3", "s4", "s5", "s6", "s7"];
 
@@ -18,9 +19,9 @@
       teachBtn: "O‘qituvchi", teacher_panel: "O‘qituvchi paneli", journal: "O‘qituvchi jurnali",
       tab_journal: "Jurnal",       tab_guide: "Yo‘riqnoma", tab_list: "Talabalar", tab_an: "Tahlil", tab_lb: "Reyting", tab_set: "Sozlama",
       tp_pw: "O‘qituvchi paroli", tp_login: "Kirish", tp_badpw: "Parol noto‘g‘ri.",
-      tp_about: "Talaba paroli (1234) bu yerda ishlamaydi. Jurnal va ballar shu brauzerning xotirasida saqlanadi.",
-      tp_std: "Standart parol: 123456 — kirgach, Sozlama bo‘limida almashtiring.",
-      tp_info: "Har bir talaba shu kompyuterda ro‘yxatdan o‘tganida jurnalga yoziladi. Boshqa kompyuterdagi natijani JSON import qiling. Grafikli to‘liq hisobotni talaba o‘zi «PDF hisobot» tugmasi bilan oladi.",
+      tp_about: "Google bilan o‘qituvchi sifatida kirgan bo‘lsangiz, parol so‘ralmaydi. Parol faqat Google siz ulanmagan eski jurnal uchun.",
+      tp_std: "Eski standart parol: 123456. Google hisobi bo‘lsa, u ishlatilmaydi.",
+      tp_info: "Google jurnali jadvaldan keladi: telefon va kompyuterda talabalar bir xil. Google siz bo‘lmagan yozuv shu brauzerda qoladi.",
       tp_csv: "CSV (anonim)", tp_xapi: "JSON: xAPI jurnali (anonim)", tp_full: "JSON: to‘liq (ism bilan)",
       tp_pdf: "Jurnalni PDF", tp_pdf1: "Shu talaba PDF", tp_import: "JSON import", tp_logout: "Chiqish",
       tp_student: "Talaba", tp_group: "Guruh", tp_lab: "Ish", tp_status: "Holat", tp_steps: "Bosqich",
@@ -28,7 +29,7 @@
       tp_done: "Yakunlangan", tp_active: "Jarayonda", tp_empty: "Hali yozuv yo‘q. Talaba laboratoriya ochganda jurnal to‘ladi.",
       tp_del: "O‘chirish", tp_confirm: "«{n}» yozuvi jurnaldan o‘chirilsinmi?", tp_note: "O‘qituvchi izohi",
       tp_save: "Saqlash", tp_pwchange: "Parolni almashtirish", tp_pwnew: "Yangi parol (kamida 6 belgi)",
-      tp_pwshort: "Parol kamida 6 belgidan iborat bo‘lsin.", tp_pwok: "Yangi parol saqlandi (faqat shu brauzerda).",
+      tp_pwshort: "Parol kamida 6 belgidan iborat bo‘lsin.", tp_pwok: "Yangi parol saqlandi. Google bilan kirilganda parol so‘ralmaydi.",
       tp_avg: "O‘rtacha", tp_legend: "Katakdagi son — 5 balllik baho (5 a‘lo, 4 yaxshi, 3 qoniqarli, 2 qoniqarsiz). Ko‘k raqam — joriy bosqich.",
       tp_filter: "Guruh", tp_all: "Barchasi", tp_open: "Batafsil", tp_back: "Jadvalga qaytish",
       tp_imp_res: "Import: {ok} ta qabul qilindi, {bad} ta nazorat yig‘indisi mos kelmadi, {fail} ta o‘qilmadi.",
@@ -62,8 +63,8 @@
       tab_journal: "Журнал", tab_guide: "Yo‘riqnoma", tab_list: "Студенты", tab_an: "Аналитика", tab_lb: "Рейтинг", tab_set: "Настройки",
       guide_lang: "Qadamlar o‘zbek tilida — saytdagi tugmalar bilan bir xil.",
       tp_pw: "Пароль преподавателя", tp_login: "Войти", tp_badpw: "Неверный пароль.",
-      tp_about: "Пароль студента (1234) здесь не подходит. Журнал хранится в памяти этого браузера.",
-      tp_std: "Стандартный пароль: 123456 — после входа смените его в разделе «Настройки».",
+      tp_about: "Если вы вошли как преподаватель через Google, пароль не нужен. Пароль — только для старого журнала без Google.",
+      tp_std: "Старый пароль: 123456. С Google он не используется.",
       tp_info: "Студент попадает в журнал, когда регистрируется на этом компьютере. Чужой JSON можно импортировать. Полный отчёт с графиками студент скачивает сам.",
       tp_csv: "CSV (анонимно)", tp_xapi: "JSON: журнал xAPI (анонимно)", tp_full: "JSON: полный (с именами)",
       tp_pdf: "Журнал в PDF", tp_pdf1: "PDF этого студента", tp_import: "Импорт JSON", tp_logout: "Выйти",
@@ -72,7 +73,7 @@
       tp_done: "Завершено", tp_active: "В процессе", tp_empty: "Записей пока нет. Журнал заполнится, когда студент откроет работу.",
       tp_del: "Удалить", tp_confirm: "Удалить запись «{n}» из журнала?", tp_note: "Заметка преподавателя",
       tp_save: "Сохранить", tp_pwchange: "Смена пароля", tp_pwnew: "Новый пароль (не менее 6 символов)",
-      tp_pwshort: "Пароль должен быть не короче 6 символов.", tp_pwok: "Новый пароль сохранён (только в этом браузере).",
+      tp_pwshort: "Пароль должен быть не короче 6 символов.", tp_pwok: "Новый пароль сохранён. При входе через Google пароль не спрашивается.",
       tp_avg: "Среднее", tp_legend: "Число в клетке — итоговый балл. Синее число — текущий этап.",
       tp_filter: "Группа", tp_all: "Все", tp_open: "Подробнее", tp_back: "К таблице",
       tp_imp_res: "Импорт: принято {ok}, контрольная сумма не совпала {bad}, не прочитано {fail}.",
@@ -106,8 +107,8 @@
       tab_journal: "Journal", tab_guide: "Yo‘riqnoma", tab_list: "Students", tab_an: "Analytics", tab_lb: "Ranking", tab_set: "Settings",
       guide_lang: "The steps are in Uzbek, matching the buttons on this site.",
       tp_pw: "Teacher password", tp_login: "Sign in", tp_badpw: "Wrong password.",
-      tp_about: "The student password (1234) does not work here. The journal stays in this browser’s storage.",
-      tp_std: "Default password: 123456 — change it under Settings after you sign in.",
+      tp_about: "A Google teacher sign-in opens this panel without a password. The password is only a fallback when Google is not used.",
+      tp_std: "Legacy password: 123456. It is not used after Google sign-in.",
       tp_info: "A student is written into the journal when they register on this computer. Import a JSON file from another computer. The full report with graphs is downloaded by the student.",
       tp_csv: "CSV (anonymous)", tp_xapi: "JSON: xAPI log (anonymous)", tp_full: "JSON: full (with names)",
       tp_pdf: "Journal PDF", tp_pdf1: "This student PDF", tp_import: "Import JSON", tp_logout: "Sign out",
@@ -116,7 +117,7 @@
       tp_done: "Finished", tp_active: "In progress", tp_empty: "No records yet. The journal fills when a student opens a lab.",
       tp_del: "Delete", tp_confirm: "Delete the record for “{n}”?", tp_note: "Teacher note",
       tp_save: "Save", tp_pwchange: "Change password", tp_pwnew: "New password (at least 6 characters)",
-      tp_pwshort: "Use at least 6 characters.", tp_pwok: "New password saved (this browser only).",
+      tp_pwshort: "Use at least 6 characters.", tp_pwok: "New password saved. Google sign-in does not ask for it.",
       tp_avg: "Average", tp_legend: "A number in a cell is the final score. A blue number is the current step.",
       tp_filter: "Group", tp_all: "All", tp_open: "Details", tp_back: "Back to the table",
       tp_imp_res: "Import: accepted {ok}, checksum mismatch {bad}, unreadable {fail}.",
@@ -618,9 +619,20 @@
     auth: false, tab: "journal", group: "", sel: null,
     async open() {
       const d = document.getElementById("teacher");
+      const b = document.getElementById("tBody");
       document.getElementById("tClose").onclick = () => d.close();
       document.getElementById("tTitle").textContent = tr("teacher_panel");
       if (!d.open) d.showModal();
+      const st = window.ELAB_AUTH && window.ELAB_AUTH.state;
+      if (st && st.mode === "teacher" && st.account) {
+        this.google = true;
+        this.auth = true;
+        if (b) b.innerHTML = `<p class="tmsg info">Hisobingiz tekshirilmoqda…</p>`;
+        if (window.ELAB_AUTH.ensureTeacher) await window.ELAB_AUTH.ensureTeacher();
+        this.render();
+        return;
+      }
+      this.google = false;
       this.render();
     },
     async check(pw) {
@@ -639,7 +651,9 @@
       const b = document.getElementById("tBody");
       if (!b) return;
       if (!this.auth) {
-        b.innerHTML = `<form id="tLogin" style="max-width:380px"><div class="row"><label for="tPw">${esc(tr("tp_pw"))}</label><input id="tPw" type="password" autocomplete="current-password" style="flex:1"></div><div id="tMsg"></div><button class="ok" type="submit">${esc(tr("tp_login"))}</button></form><p class="tmsg info">${esc(tr("tp_about"))}</p><p style="font-size:12.5px;color:#94a3b8">${esc(tr("tp_std"))}</p>`;
+        b.innerHTML = `<form id="tLogin" style="max-width:380px"><div class="row"><label for="tPw">${esc(tr("tp_pw"))}</label><input id="tPw" type="password" autocomplete="current-password" style="flex:1"></div><div id="tMsg"></div><button class="ok" type="submit">${esc(tr("tp_login"))}</button></form><p class="tmsg info">${esc(tr("tp_about"))}</p><p style="font-size:12.5px;color:#94a3b8">${esc(tr("tp_std"))}</p><div class="grow"><button type="button" class="sec" id="tGoogle">Google bilan kirish</button></div>`;
+        const gbtn = document.getElementById("tGoogle");
+        if (gbtn && window.ELAB_AUTH && window.ELAB_AUTH.openGate) gbtn.onclick = () => window.ELAB_AUTH.openGate();
         document.getElementById("tLogin").onsubmit = async e => {
           e.preventDefault();
           if (await this.check(document.getElementById("tPw").value)) { this.auth = true; this.render(); }
@@ -693,7 +707,10 @@
         </tbody></table></div><div id="impMsg"></div>`;
       const grp = document.getElementById("tGrp");
       grp.onchange = () => { this.group = grp.value; this.render(); };
-      document.getElementById("tOut").onclick = () => { this.auth = false; this.tab = "journal"; this.render(); };
+      document.getElementById("tOut").onclick = () => {
+        if (this.google) { document.getElementById("teacher").close(); return; }
+        this.auth = false; this.tab = "journal"; this.render();
+      };
       document.getElementById("xPdf").onclick = () => PDF.journal(rows);
       document.getElementById("xCsv").onclick = () => this.csv(Object.values(this.store().students));
       document.getElementById("xFull").onclick = () => this.fullJson();
@@ -715,7 +732,7 @@
           const items = (lab.baho && lab.baho.items) || lab.criteria || [];
           const checks = items.map(it => `<li class="${it.met ? "baho-ok" : "baho-no"}">${it.met ? "✔" : "✘"} ${esc(it.name)} — ${esc(it.detail || "")}</li>`).join("");
           const ov = lab.gradeOverride || "";
-          return `<div class="card"><b>${id}. ${esc(title)}</b><br>${lab.done ? `<span class="tag ok">${esc(tr("tp_done"))}</span>` : `<span class="tag info">${esc(stepName(lab.step))}</span>`} ${pt != null ? `<b>${pt} — ${esc(pointWord(pt))}</b>` : ""} ${lab.score != null ? `<small>ball ${lab.score}</small>` : ""}${lab.gradeOverride ? ` <span class="tag warn">o‘qituvchi</span>` : ""}<br><small>${esc(tr("tp_tests"))}: ${lab.preOk == null ? "—" : lab.preOk + "/" + lab.preN} · ${lab.postOk == null ? "—" : lab.postOk + "/" + lab.postN}</small>${text ? `<p>${esc(text.t)}</p>` : ""}${checks ? `<ul class="baho-list">${checks}</ul>` : ""}<label>Baho <select data-ov="${esc(String(id))}"><option value="" ${ov === "" ? "selected" : ""}>Avtomatik${lab.gradeAuto ? " (" + lab.gradeAuto + ")" : ""}</option>${[5, 4, 3, 2].map(n => `<option value="${n}" ${String(ov) === String(n) ? "selected" : ""}>${n} ${esc(pointWord(n))}</option>`).join("")}</select></label>${calc ? `<table class="tt" style="margin-top:6px"><tr><th>${esc(tr("h_formula"))}</th><th>${esc(tr("tp_score"))}</th><th></th><th></th></tr>${calc}</table>` : ""}</div>`;
+          return `<div class="card"><b>${id}. ${esc(title)}</b><br>${lab.done ? `<span class="tag ok">${esc(tr("tp_done"))}</span>` : `<span class="tag info">${esc(stepName(lab.step))}</span>`} ${pt != null ? `<b>${pt} — ${esc(pointWord(pt))}${lab.score != null ? " · " + lab.score + "%" : ""}</b>` : ""}${lab.gradeOverride ? ` <span class="tag warn">o‘qituvchi</span>` : ""}${pt === 2 ? ` <span class="tag err">sertifikat yo‘q</span>` : ""}<br><small>${esc(tr("tp_tests"))}: ${lab.preOk == null ? "—" : lab.preOk + "/" + lab.preN} · ${lab.postOk == null ? "—" : lab.postOk + "/" + lab.postN}</small>${text ? `<p>${esc(text.t)}</p>` : ""}${checks ? `<ul class="baho-list">${checks}</ul>` : ""}<label>Baho <select data-ov="${esc(String(id))}"><option value="" ${ov === "" ? "selected" : ""}>Avtomatik${lab.gradeAuto ? " (" + lab.gradeAuto + ")" : ""}</option>${[5, 4, 3, 2].map(n => `<option value="${n}" ${String(ov) === String(n) ? "selected" : ""}>${n} ${esc(pointWord(n))}</option>`).join("")}</select></label>${calc ? `<table class="tt" style="margin-top:6px"><tr><th>${esc(tr("h_formula"))}</th><th>${esc(tr("tp_score"))}</th><th></th><th></th></tr>${calc}</table>` : ""}</div>`;
         }).join("");
         pane.innerHTML = `<button type="button" class="sec" id="tBack">${esc(tr("tp_back"))}</button>
           <h3 style="margin:10px 0 4px">${esc(r.name)}</h3><p style="color:#94a3b8">${esc(r.group)} · ID ${esc(r.id)} · AI: ${r.ai || 0}</p>
@@ -723,9 +740,25 @@
           <label>${esc(tr("tp_note"))}</label><textarea id="tNote" style="width:100%;height:70px">${esc(r.note || "")}</textarea><br>
           <button type="button" id="tNoteSave">${esc(tr("tp_save"))}</button> <button type="button" class="sec" id="tPdf1">${esc(tr("tp_pdf1"))}</button> <button type="button" class="sec" id="tDel">${esc(tr("tp_del"))}</button>`;
         document.getElementById("tBack").onclick = () => { this.sel = null; this.render(); };
-        document.getElementById("tNoteSave").onclick = () => { const j = this.store(); j.students[r.id && nid(r.id)].note = document.getElementById("tNote").value.slice(0, 2000); TJ.save(j); };
+        document.getElementById("tNoteSave").onclick = async () => {
+          const j = this.store();
+          const text = document.getElementById("tNote").value.slice(0, 2000);
+          j.students[r.id && nid(r.id)].note = text;
+          TJ.save(j);
+          if (this.google && window.ELAB_AUTH && window.ELAB_AUTH.saveNote) {
+            const res = await window.ELAB_AUTH.saveNote(r.id, text);
+            if (res && res.legacy) document.getElementById("tNote").insertAdjacentHTML("afterend", `<p class="tmsg warn">${esc(LEGACY_SYNC)}</p>`);
+          }
+        };
         document.getElementById("tPdf1").onclick = () => PDF.student(this.store().students[this.sel]);
-        document.getElementById("tDel").onclick = () => { if (!confirm(tr("tp_confirm", { n: r.name }))) return; const j = this.store(); delete j.students[this.sel]; TJ.save(j); this.sel = null; this.render(); };
+        document.getElementById("tDel").onclick = async () => {
+          if (!confirm(tr("tp_confirm", { n: r.name }))) return;
+          if (this.google && window.ELAB_AUTH && window.ELAB_AUTH.dropStudent) {
+            const res = await window.ELAB_AUTH.dropStudent(r.id);
+            if (res && res.legacy) { alert(LEGACY_SYNC); return; }
+          }
+          const j = this.store(); delete j.students[this.sel]; TJ.save(j); this.sel = null; this.render();
+        };
         pane.querySelectorAll("[data-ov]").forEach(sel => sel.onchange = () => {
           const j = this.store();
           const rec = j.students[this.sel];
@@ -736,7 +769,18 @@
           const n = lab.gradeOverride || lab.gradeAuto;
           if (n) applyPoint(lab, n);
           TJ.save(j);
+          const sub = rec.id;
+          const labId = sel.dataset.ov;
+          const ov = lab.gradeOverride == null ? "" : lab.gradeOverride;
           this.render();
+          if (this.google && window.ELAB_AUTH && window.ELAB_AUTH.saveMark) {
+            window.ELAB_AUTH.saveMark(sub, labId, ov).then(res => {
+              if (res && res.legacy) {
+                const pane = document.getElementById("tPane");
+                if (pane) pane.insertAdjacentHTML("afterbegin", `<p class="tmsg warn">${esc(LEGACY_SYNC)}</p>`);
+              }
+            });
+          }
         });
         return;
       }
@@ -802,7 +846,8 @@
           <li><span class="ybtn">Google bilan kirish</span> (inglizcha tugma: <span class="ybtn">Sign in with Google</span>). O‘z Gmail ingizni tanlang.</li>
           <li>Tugma chiqmasa, yozuv «Google hali sozlanmagan» bo‘ladi. Buni sayt egasi tuzatadi. Siz shu vaqtgacha lokal jurnal va <span class="ybtn">Mehmon</span> bilan dars o‘ta olasiz. Mehmon natijasi jurnalga yozilmaydi.</li>
           <li><span class="ybtn">Men o‘qituvchiman</span> ni bosing. <span class="ybtn">Men talabaman</span> ni tanlamang — u talaba formasi.</li>
-          <li>Yuqoridagi <span class="ybtn">O‘qituvchi</span> tugmasi. Panel paroli birinchi marta <span class="ybtn">123456</span>. Tugma: <span class="ybtn">Kirish</span>.</li>
+          <li>Yuqoridagi <span class="ybtn">O‘qituvchi</span> paneli Google hisobingiz bilan ochiladi. Parol so‘ralmaydi. Eski parol <span class="ybtn">123456</span> faqat Google siz ulanmagan brauzer uchun.</li>
+          <li>Telefon yoki boshqa kompyuter: shu Gmail bilan kiring va <span class="ybtn">Men o‘qituvchiman</span> ni tanlang. Kod va talabalar jadvaldan o‘zi chiqadi. Skriptni qayta joylamang. Hisob topilmasa, kompyuterdagi 6 belgili kodni bir marta yozing.</li>
           <li><span class="ybtn">Yo‘riqnoma</span> shu yerda, Drive ulanmasdan oldin ham bor. Google kartasidagi <span class="ybtn">Yo‘riqnoma</span> tugmasi ham shu bo‘limni ochadi.</li>
         </ol>
 
@@ -870,7 +915,7 @@
 
         <h3 id="y8">8. Drive dan yangilash va eksport</h3>
         <ol>
-          <li><span class="ybtn">Google Drive dan yangilash</span> paneldagi jadvalni sizning Google jadvalingizdagi qatorlar bilan to‘ldiradi. Dars boshida bir marta bosing. Qatorlar soni tugma ostida chiqadi.</li>
+          <li>Panel ochilganda talabalar jadvaldan o‘zi keladi. <span class="ybtn">Jadvaldan yangilash</span> ro‘yxatni qayta oladi. Telefon va kompyuter bir xil jadvalni ko‘radi.</li>
           <li><span class="ybtn">Jurnalni PDF</span> — albom varaq, 14 ta ish ustuni.</li>
           <li><span class="ybtn">CSV (anonim)</span> — ismsiz jadval.</li>
           <li><span class="ybtn">JSON: to‘liq (ism bilan)</span> — zaxira nusxa. Boshqa kompyuterga <span class="ybtn">JSON import</span> bilan qaytadi.</li>
@@ -879,33 +924,28 @@
           <li>Internet uzilsa, ish shu brauzerda davom etadi. Ulanish qaytganida talaba natijasi qayta yuboriladi. Panelda ko‘rish uchun yangilashni yana bosing.</li>
         </ol>
 
-        <h3 id="y9">9. Panel parolini almashtirish</h3>
-        <ol>
-          <li><span class="ybtn">Sozlama</span> bo‘limi.</li>
-          <li>Maydon: <span class="ybtn">Yangi parol (kamida 6 belgi)</span>. Tugma: <span class="ybtn">Saqlash</span>.</li>
-          <li>Yangi parol faqat shu brauzerda saqlanadi. Laboratoriya paroli <span class="ybtn">1234</span> o‘sha holicha qoladi.</li>
-          <li><span class="ybtn">Jurnal</span> dagi <span class="ybtn">Chiqish</span> panelni yopadi. Keyingi safar yangi parol so‘raladi.</li>
-        </ol>
+        <h3 id="y9">9. Panelga kirish</h3>
+        <p>Google hisobi panelning kaliti. Shu Gmail boshqa qurilmada ham shu jurnalni ochadi. <span class="ybtn">Sozlama</span> dagi parol faqat Google siz ulanmagan eski brauzer uchun. Laboratoriya paroli <span class="ybtn">1234</span> o‘zgarmaydi.</p>
         <p><span class="ybtn">Yangi kod</span> eski 6 belgini bekor qiladi. Jadvaldagi yozuvlar qoladi. Talabalarga yangi kodni bering.</p>
 
         <h3 id="yMez">Baholash mezoni (5–2)</h3>
-        <p>Har bir laboratoriya shu mezon bilan baholanadi. Talaba hisobotda baho, matn va qaysi band bajarilganini ko‘radi. Siz Talabalar bo‘limida bahoni o‘zgartira olasiz.</p>
-        <p><b>5 — a‘lo.</b> Talaba fanning mohiyatini to‘liq tushunadi, biladi, ifodalay oladi, aytib beradi, tasavvurga ega, mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, ijodiy fikrlaydi hamda mustaqil xulosa va qaror qabul qiladi.</p>
-        <p><b>4 — yaxshi.</b> Talaba mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
-        <p><b>3 — qoniqarli.</b> Talaba olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
-        <p><b>2 — qoniqarsiz.</b> Talaba fan dasturini o‘zlashtirmagan, fanning mohiyatini tushunmaydi hamda tasavvurga ega emas.</p>
+        <p>Baho 100 balllik natijaning foizidan chiqadi. Talaba hisobotda baho va foizni ko‘radi. Siz Talabalar bo‘limida bahoni o‘zgartira olasiz. 2 bahoda sertifikat berilmaydi, jumladan siz 2 qo‘yganingizda ham.</p>
+        <p><b>5 — a‘lo:</b> 90 % va undan yuqori. Talaba fanning mohiyatini to‘liq tushunadi, biladi, ifodalay oladi, aytib beradi, tasavvurga ega, mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, ijodiy fikrlaydi hamda mustaqil xulosa va qaror qabul qiladi.</p>
+        <p><b>4 — yaxshi (70 % dan 90 % gacha).</b> Talaba mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
+        <p><b>3 — qoniqarli (60 % dan 70 % gacha).</b> Talaba olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
+        <p><b>2 — qoniqarsiz (60 % dan past).</b> Talaba fan dasturini o‘zlashtirmagan. Sertifikat berilmaydi.</p>
         <ul class="baho-list">
-          <li><b>Biladi</b> — kirish testi kamida 60 %.</li>
-          <li><b>Tushunadi</b> — yakuniy test kamida 60 %.</li>
-          <li><b>To‘liq tushunadi</b> — ikkala test o‘rtacha kamida 80 % (faqat 5 uchun).</li>
+          <li><b>Biladi</b> — kirish testi.</li>
+          <li><b>Tushunadi</b> — yakuniy test.</li>
+          <li><b>To‘liq tushunadi</b> — ikkala testning o‘rtachasi.</li>
           <li><b>Ifodalay oladi, aytib beradi</b> — ikkala test yakunlangan.</li>
           <li><b>Tasavvurga ega</b> — nazariya ochilgan va testlarning yarmi to‘g‘ri.</li>
           <li><b>Amalda qo‘llay oladi</b> — sxema yig‘ilgan va barcha o‘lchov seriyalari yetarli.</li>
-          <li><b>Mustaqil mushohada</b> — hisoblarning kamida 75 % i ±5 % da to‘g‘ri (4 va 5 uchun).</li>
-          <li><b>Ijodiy fikrlaydi</b> — «Mustaqil qaror» maydoni kamida 40 belgi (5 uchun).</li>
-          <li><b>Mustaqil xulosa va qaror</b> — xulosa kamida 60 belgi va qaror kamida 40 belgi (5 uchun).</li>
+          <li><b>Mustaqil mushohada</b> — hisoblarning to‘g‘ri ulushi.</li>
+          <li><b>Ijodiy fikrlaydi</b> — «Mustaqil qaror» maydoni.</li>
+          <li><b>Mustaqil xulosa va qaror</b> — xulosa va qaror. Yakuniy baho shu bandlardan emas, 100 ballning foizidan chiqadi.</li>
         </ul>
-        <p>5 uchun shu bandlarning hammasi kerak. 4 uchun mushohada va amaliyot, lekin to‘liq tushunish va ijodiy qaror shart emas. 3 uchun amaliyot va tushuncha yetadi, mushohada shart emas. Qolgan hollarda baho 2.</p>
+        <p><b>4 — yaxshi:</b> 70 % dan 90 % gacha. <b>3 — qoniqarli:</b> 60 % dan 70 % gacha. <b>2 — qoniqarsiz:</b> 60 % dan past, sertifikat berilmaydi. Chegara: 90, 70 va 60 o‘z bahosiga kiradi (90 — 5, 70 — 4, 60 — 3).</p>
 
         <h3 id="y10">10. Tez-tez chiqadigan xatolar</h3>
         <p><span class="ybtn">Google tugmasi yo‘q.</span> Ega hali client ID qo‘ymagan. Lokal jurnal ishlaydi. Mehmon jurnalga yozmaydi.</p>
@@ -913,13 +953,14 @@
         <p><span class="ybtn">origin_mismatch.</span> Sayt manzili Cloud Console dagi ro‘yxatda yo‘q yoki oxirida qo‘shimcha yo‘l bor. To‘g‘ri yozuv: https://elektronika-tdpi.uz — buni ega tuzatadi.</p>
         <p><span class="ybtn">Kod topilmadi.</span> Kod xato, bo‘shliq bor, yoki siz <span class="ybtn">Yangi kod</span> bosgansiz. Doskadagi kodni yangisi bilan almashtiring.</p>
         <p><span class="ybtn">Manzil …/exec bo‘lishi kerak.</span> Maydonga jadval havolasi, /dev yoki bo‘shliq tushgan. Veb-ilova oynasidagi manzilni qayta nusxalang.</p>
-        <p><span class="ybtn">Talaba ishladi, panel bo‘sh.</span> Avval <span class="ybtn">Google Drive dan yangilash</span>. Talabaning brauzeri bilan sizning brauzeringiz lokal jurnalni bo‘lishmaydi.</p>
+        <p><span class="ybtn">Talaba ishladi, panel bo‘sh.</span> Panel jadvaldan o‘qiydi. Talaba Google bilan shu kodga ulangan bo‘lishi kerak. Mehmon yozuvi jadvalga tushmaydi.</p>
         <p><span class="ybtn">Jurnal tasdiqlanmadi</span> yoki yangilash xato. Execute as <span class="ybtn">Me</span> emas, yoki kirish <span class="ybtn">Anyone</span> emas. <span class="ybtn">Joylashtirishlarni boshqarish</span> → qalamcha → shu ikki sozlama → <span class="ybtn">Joylashtirish</span>. So‘ng saytda kodni qayta oling.</p>
         <p><span class="ybtn">Xavfsizlikka qaytish</span> bosilgan. Ruxsat bekor bo‘lgan. Joylashtirishni qaytaring va 5-qadam: Kengaytirilgan → ga o‘tish (xavfli) → Ruxsat berish.</p>
         <p><span class="ybtn">Sahifa topilmadi</span> (404). Kirish «Faqat men» qolgan yoki joylashtirish o‘chirilgan. Yangi joylashtirish qiling, manzilni qayta qo‘ying.</p>
         <p><span class="ybtn">Kodni o‘zgartirdim, talaba eski natijani ko‘ryapti.</span> Eski joylashtirish eski kodni ishlatadi. Boshqarish → qalamcha → versiya: <span class="ybtn">Yangi versiya</span> / <span class="ybtn">New version</span> → Joylashtirish.</p>
         <p><span class="ybtn">Avval kod oling.</span> Yangilashdan oldin 6-qadam kerak. Yo‘riqnoma baribir ochiladi.</p>
-        <p><span class="ybtn">Panel paroli esimda yo‘q.</span> U faqat shu brauzerda. Sayt ma’lumotini o‘chirsangiz, parol yana 123456 bo‘ladi va shu kompyuterdagi lokal jurnal ham ketadi. Google jadvalidagi qatorlar o‘chmaydi.</p>
+        <p><span class="ybtn">Telefonda yana sozlash chiqdi.</span> Shu Gmail bilan kiring. Reestr hisobni tanisa, kod va talabalar o‘zi chiqadi. Hisob topilmasa, 6 belgili kodni bir marta yozing. Skript qadami bog‘langan hisobda chiqmaydi.</p>
+        <p><span class="ybtn">Panel paroli esimda yo‘q.</span> Google bilan kirilganda parol kerak emas. Eski parol faqat shu brauzerda edi. Google jadvalidagi qatorlar o‘chmaydi.</p>
         <p><span class="ybtn">Token muddati.</span> Google belgisi taxminan bir soatda eskiradi. Talaba qayta <span class="ybtn">Google bilan kirish</span> qiladi.</p>
         <h3 id="yAi">AI maslahatchi — faqat sayt egasi</h3>
         <p>O‘qituvchi va talaba kalit kiritmaydi. Kalit sayt kodida ham yo‘q. Maslahatchi reestr skripti orqali ishlaydi; u ishlamasa ichki maslahatchi javob beradi.</p>
@@ -929,7 +970,7 @@
           <li>Skript kodini <span class="ybtn">docs/registry-apps-script.gs</span> dagi yangi nusxa bilan almashtiring.</li>
           <li>Manzil o‘zgarmasligi uchun: <span class="ybtn">Начать развертывание</span> → <span class="ybtn">Управление развертываниями</span> → qalamcha → Version <span class="ybtn">Новая версия</span> → <span class="ybtn">Начать развертывание</span>. <span class="ybtn">/exec</span> o‘sha holicha qoladi.</li>
           <li>Birinchi chaqiruvda Google <span class="ybtn">UrlFetchApp</span> uchun yangi ruxsat so‘raydi. Tasdiqlang.</li>
-          <li>Skript yana yangilandi: maslahatchi tayyor sonni aytmaydi. Yangi faylni qayta joylab, <span class="ybtn">Новая версия</span> bilan yana deploy qiling.</li>
+          <li>Skript yana yangilandi: o‘qituvchi hisobi Google orqali tiklanadi (<span class="ybtn">teacher</span> va <span class="ybtn">link</span>). Yangi faylni qayta joylab, <span class="ybtn">Новая версия</span> bilan yana deploy qiling. <span class="ybtn">/exec</span> o‘zgarmaydi.</li>
         </ol>
         <div class="ybox">Sayt egasi Cloud Console, reestr va namuna jadvalni bir marta sozlaydi. O‘qituvchi buni qilmaydi. Ega uchun qadamlar: docs/google-setup-uz.md</div>
       </div>`;

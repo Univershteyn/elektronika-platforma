@@ -132,6 +132,10 @@ Talaba va o‘qituvchi kalit kiritmaydi. Kalit sayt faylida ham yo‘q. Maslahat
 
 `registryUrl` o‘sha `/exec` bo‘lib qoladi. Saytni qayta yozish shart emas.
 
+Skript yana yangilandi: o‘qituvchi hisobi Google `sub` va email bilan saqlanadi. Yangi amallar: `teacher` (shu hisobning kodi va manzili) va `link` (eski qatorni kod orqali bog‘lash; jurnal `whoami` egasini tasdiqlaydi). `docs/registry-apps-script.gs` ni qayta joylab, **Новая версия** bilan deploy qiling. `/exec` o‘zgarmaydi.
+
+Jurnal namunasi ham yangilandi: `whoami`, baho (`mark`), izoh (`note`), o‘chirish (`drop`). Namuna jadvaldagi skriptni yangilang. Allaqachon nusxa olgan o‘qituvchi o‘z nusxasida ham shuni qiladi va **Yangi versiya** qilib joylaydi. Eski nusxa `list` ni qaytarar ekan, kod va talabalar ro‘yxati baribir tiklanadi. `whoami` bo‘lmasa, eski kodni bog‘lashda sayt aniq o‘zbekcha yo‘l ko‘rsatadi. Baho va izoh barcha qurilmalarda bir xil bo‘lishi uchun jurnal skripti yangilangan bo‘lishi kerak.
+
 Skript yana yangilandi: model tayyor sonni aytmaydi, faqat yo‘nalish beradi. Mijoz yuborgan `system` xabari tashlanadi. Shu yangi `docs/registry-apps-script.gs` ni qayta joylab, **Новая версия** qilib yana deploy qiling. Aks holda eski joylashtirish ishlayveradi.
 
 ## Tasdiqlanmagan ilova — ega va o‘qituvchi uchun bir xil
@@ -160,8 +164,9 @@ Shu matn panelda **Yo‘riqnoma** bo‘limida ham turadi. Drive ulanmasdan ochil
 3. **Google bilan kirish** (inglizcha: **Sign in with Google**). O‘z Gmail ingiz.
 4. Tugma o‘rniga «Google hali sozlanmagan» chiqsa, ega hali client ID qo‘ymagan. Lokal jurnal va **Mehmon** ishlaydi. Mehmon natijasi jurnalga yozilmaydi.
 5. **Men o‘qituvchiman**. **Men talabaman** talaba formasi.
-6. Yuqoridagi **O‘qituvchi**. Panel paroli birinchi marta **123456**. Tugma: **Kirish**.
-7. **Yo‘riqnoma** bo‘limi shu paytdan bor. Jurnal kartasidagi **Yo‘riqnoma** tugmasi ham shu yerni ochadi.
+6. Yuqoridagi **O‘qituvchi** paneli Google hisobi bilan ochiladi. Parol so‘ralmaydi. Eski parol **123456** faqat Google ulanmagan brauzer uchun.
+7. Telefon yoki boshqa kompyuter: shu Gmail bilan kiring va **Men o‘qituvchiman** ni tanlang. Kod va talabalar jadvaldan o‘zi chiqadi. Skriptni qayta joylamang. Hisob reestrda topilmasa, kompyuterdagi 6 belgili kodni bir marta yozing.
+8. **Yo‘riqnoma** bo‘limi shu paytdan bor. Jurnal kartasidagi **Yo‘riqnoma** tugmasi ham shu yerni ochadi.
 
 ### 2. Jurnal namunasidan nusxa
 
@@ -205,45 +210,40 @@ Shu matn panelda **Yo‘riqnoma** bo‘limida ham turadi. Drive ulanmasdan ochil
 1. **Google bilan kirish**, **Men talabaman**.
 2. Ism, familiya, kurs (1–4), guruh raqami (1–30), o‘qituvchi kodi.
 3. **Jurnalga ulanish**.
-4. Test, o‘lchov, hisob va baho jadvalning **Jurnal** varag‘iga va, yangilashdan keyin, panelga tushadi.
+4. Test, o‘lchov, hisob va baho jadvalning **Jurnal** varag‘iga tushadi. Panel ochilganda ro‘yxat jadvaldan o‘zi keladi.
 5. **Mehmon sifatida davom etish** jurnalga yozmaydi.
 
 Internet uzilsa, ish shu brauzerda davom etadi. Ulanish qaytganida natija qayta yuboriladi.
 
 ### 7. Yangilash, eksport, parol
 
-1. **Google Drive dan yangilash** — panelni jadvaldagi qatorlar bilan to‘ldiradi.
+1. Panel ochilganda talabalar jadvaldan keladi. **Jadvaldan yangilash** ro‘yxatni qayta oladi. Telefon va kompyuter bir xil jadvalni ko‘radi.
 2. **Jurnalni PDF**, **CSV (anonim)**, **JSON: to‘liq (ism bilan)**, **JSON: xAPI jurnali (anonim)**. To‘liq JSON ni boshqa kompyuterda **JSON import** qilish mumkin.
 3. Grafikli hisobotni talaba o‘zi «PDF hisobot» bilan oladi.
-4. Parol: **Sozlama** → **Yangi parol (kamida 6 belgi)** → **Saqlash**. Parol shu brauzerda qoladi. Laboratoriya paroli 1234 o‘zgarmaydi.
-5. **Chiqish** panelni qulflaydi.
+4. Panel kaliti — Google hisobi. **Sozlama** dagi parol faqat Google siz ulanmagan eski brauzer uchun. Laboratoriya paroli 1234 o‘zgarmaydi.
+5. **Chiqish** Google o‘qituvchisida panelni yopadi. Keyingi safar parol so‘ralmaydi.
 6. **Yangi kod** eski kodni bekor qiladi. Jadvaldagi yozuvlar qoladi. Talabaga yangi kodni bering.
 
 ## Baholash mezoni (5–2)
 
-Har bir laboratoriya shu mezon bilan baholanadi. Talaba hisobotda baho, rasmiy matn va bajarilgan yoki yetishmagan bandlarni ko‘radi. O‘qituvchi panelining **Talabalar** bo‘limida bahoni o‘zgartira oladi. Mehmon ham bahoni ko‘radi, lekin u jurnalga yozilmaydi.
+Baho 100 balllik natijaning foizidan chiqadi. Talaba hisobotda baho va foizni yonma-yon ko‘radi. O‘qituvchi **Talabalar** bo‘limida bahoni o‘zgartira oladi. Mehmon ham bahoni ko‘radi, lekin u jurnalga yozilmaydi. Sertifikat 3, 4 va 5 da beriladi. 2 da berilmaydi — avtomatik ball 60 % dan past bo‘lsa ham, o‘qituvchi 2 qo‘ysa ham.
 
-**5 — a‘lo.** Talaba fanning mohiyatini to‘liq tushunadi, biladi, ifodalay oladi, aytib beradi, tasavvurga ega, mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, ijodiy fikrlaydi hamda mustaqil xulosa va qaror qabul qiladi.
+**5 — a‘lo (90 % va undan yuqori).** Talaba fanning mohiyatini to‘liq tushunadi, biladi, ifodalay oladi, aytib beradi, tasavvurga ega, mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, ijodiy fikrlaydi hamda mustaqil xulosa va qaror qabul qiladi.
 
-**4 — yaxshi.** Talaba mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.
+**4 — yaxshi (70 % dan 90 % gacha).** Talaba mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.
 
-**3 — qoniqarli.** Talaba olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.
+**3 — qoniqarli (60 % dan 70 % gacha).** Talaba olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.
 
-**2 — qoniqarsiz.** Talaba fan dasturini o‘zlashtirmagan, fanning mohiyatini tushunmaydi hamda tasavvurga ega emas.
+**2 — qoniqarsiz (60 % dan past).** Talaba fan dasturini o‘zlashtirmagan, fanning mohiyatini tushunmaydi hamda tasavvurga ega emas. Sertifikat berilmaydi.
 
-| Mezon | Ishdan olinadigan dalil |
+| Baho | Ball foizi |
 | --- | --- |
-| Biladi | Kirish testi kamida 60 % |
-| Tushunadi | Yakuniy test kamida 60 % |
-| To‘liq tushunadi | Ikkala test o‘rtacha kamida 80 % (faqat 5) |
-| Ifodalay oladi, aytib beradi | Ikkala test yakunlangan |
-| Tasavvurga ega | Nazariya ochilgan va testlarning yarmi to‘g‘ri |
-| Amalda qo‘llay oladi | Sxema yig‘ilgan va barcha o‘lchov seriyalari yetarli |
-| Mustaqil mushohada | Hisoblarning kamida 75 % i ±5 % da to‘g‘ri (4 va 5) |
-| Ijodiy fikrlaydi | «Mustaqil qaror» kamida 40 belgi (5) |
-| Mustaqil xulosa va qaror | Xulosa kamida 60 belgi va qaror kamida 40 belgi (5) |
+| 5 — a‘lo | 90 % va undan yuqori |
+| 4 — yaxshi | 70 % dan 90 % gacha |
+| 3 — qoniqarli | 60 % dan 70 % gacha |
+| 2 — qoniqarsiz, sertifikat yo‘q | 60 % dan past |
 
-5 uchun jadvaldagi bandlarning hammasi kerak. 4 da to‘liq tushunish va ijodiy qaror shart emas. 3 da mushohada ham shart emas. Qolgan hollarda baho 2.
+Baho shu chegaralar bilan chiqadi: 90 % va yuqori — 5, 70 % dan 90 % gacha — 4, 60 % dan 70 % gacha — 3, 60 % dan past — 2. 90, 70 va 60 o‘z bahosiga kiradi.
 
 Jadvaldagi `grade` ustuni endi 5, 4, 3 yoki 2. Qo‘shimcha ustunlar (oxiriga qo‘shiladi, eski ustunlar siljmaydi): `gradeWord`, `criteria`, `gradeOverride`, `gradeAuto`. To‘liq yozuv avvalgidek `labJson` ichida. Namuna jadvaldagi skriptni yangilab, **yangi versiya** qilib qayta joylang. Allaqachon nusxa olgan o‘qituvchi ham o‘z nusxasidagi skriptni yangilashi kerak.
 
@@ -259,7 +259,9 @@ Jadvaldagi `grade` ustuni endi 5, 4, 3 yoki 2. Qo‘shimcha ustunlar (oxiriga qo
 
 **Manzil …/exec bo‘lishi kerak.** Jadval havolasi yoki `/dev` qo‘yilgan.
 
-**Talaba ishladi, panel bo‘sh.** **Google Drive dan yangilash** bosilmagan. Ikki brauzerning lokal jurnali umumiy emas.
+**Talaba ishladi, panel bo‘sh.** Panel jadvaldan o‘qiydi. Talaba Google bilan shu kodga ulangan bo‘lishi kerak. Mehmon yozuvi jadvalga tushmaydi.
+
+**Telefonda yana sozlash chiqdi.** Shu Gmail bilan kiring. Reestr hisobni tanisa, kod va talabalar o‘zi chiqadi. Hisob topilmasa, 6 belgili kodni bir marta yozing. Bog‘langan hisobda skript qadami chiqmaydi.
 
 **Jurnal tasdiqlanmadi.** Execute as **Me** emas yoki kirish **Anyone** emas. **Manage deployments** → qalamcha → shu ikki sozlama → **Deploy**, so‘ng saytda kodni qayta oling.
 
@@ -271,7 +273,7 @@ Jadvaldagi `grade` ustuni endi 5, 4, 3 yoki 2. Qo‘shimcha ustunlar (oxiriga qo
 
 **Avval kod oling.** Yangilashdan oldin kod kerak. Yo‘riqnoma baribir ochiladi.
 
-**Panel paroli esimda yo‘q.** U shu brauzerda. Sayt ma’lumotini o‘chirish parolni 123456 ga qaytaradi va lokal jurnalni o‘chiradi. Google jadvalidagi qatorlar qoladi.
+**Panel paroli esimda yo‘q.** Google bilan kirilganda parol kerak emas. Eski parol faqat shu brauzerda edi. Google jadvalidagi qatorlar qoladi.
 
 **Token muddati.** Talaba taxminan bir soatdan keyin qayta **Google bilan kirish** qiladi.
 
