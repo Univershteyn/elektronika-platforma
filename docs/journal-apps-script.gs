@@ -24,6 +24,10 @@ function handle_(q, body) {
     if (action === "result") return result_(p);
     if (action === "get") return getOne_(p);
     if (action === "list") return list_(p);
+    if (action === "whoami") return whoami_();
+    if (action === "mark") return mark_(p);
+    if (action === "note") return note_(p);
+    if (action === "drop") return drop_(p);
     return { ok: false, error: "action" };
   } catch (err) {
     return { ok: false, error: String(err && err.message || err) };
@@ -103,7 +107,106 @@ function list_(p) {
       kurs: values[i][5], guruh: values[i][6], lab: lab
     });
   }
-  return { ok: true, rows: rows };
+  return { ok: true, rows: rows, marks: true, notes: notes_() };
+}
+
+/** Reestr egalikni shu bilan tekshiradi. Token shart emas: skript o‘qituvchi nomidan ishlaydi. */
+function whoami_() {
+  var email = "";
+  try { email = Session.getEffectiveUser().getEmail() || ""; } catch (e) { email = ""; }
+  if (!email) email = PropertiesService.getScriptProperties().getProperty("TEACHER_EMAIL") || "";
+  if (!email) return { ok: false, error: "whoami" };
+  return { ok: true, email: email };
+}
+
+function teacherOk_(info, props) {
+  return info.email === props.getProperty("TEACHER_EMAIL") || info.sub === props.getProperty("TEACHER_SUB");
+}
+
+function mark_(p) {
+  var props = PropertiesService.getScriptProperties();
+  var info = verify_(p.idToken, props.getProperty("CLIENT_ID"));
+  if (!teacherOk_(info, props)) throw new Error("teacher");
+  var sub = String(p.sub || "");
+  var labId = Number(p.lab);
+  if (!sub || !labId) throw new Error("lab");
+  var key = sub + "|" + labId;
+  var sh = sheet_();
+  var values = sh.getDataRange().getValues();
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) !== key) continue;
+    var lab = {};
+    try { lab = JSON.parse(values[i][17] || "{}"); } catch (e) { lab = {}; }
+    if (p.gradeOverride === "" || p.gradeOverride == null) delete lab.gradeOverride;
+    else lab.gradeOverride = Number(p.gradeOverride);
+    var point = lab.gradeOverride || lab.gradeAuto;
+    if (point) {
+      lab.gradePoint = point;
+      lab.grade = point === 5 ? 0 : point === 4 ? 1 : point === 3 ? 2 : 3;
+    }
+    sh.getRange(i + 1, 18).setValue(JSON.stringify(lab));
+    if (sh.getLastColumn() >= 21) sh.getRange(i + 1, 21).setValue(lab.gradeOverride == null ? "" : lab.gradeOverride);
+    if (point && sh.getLastColumn() >= 11) sh.getRange(i + 1, 11).setValue(point);
+    return { ok: true };
+  }
+  return { ok: false, error: "row" };
+}
+
+function note_(p) {
+  var props = PropertiesService.getScriptProperties();
+  var info = verify_(p.idToken, props.getProperty("CLIENT_ID"));
+  if (!teacherOk_(info, props)) throw new Error("teacher");
+  var sub = String(p.sub || "");
+  if (!sub) throw new Error("sub");
+  var text = String(p.note || "").slice(0, 2000);
+  var sh = noteSheet_();
+  var values = sh.getDataRange().getValues();
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === sub) {
+      sh.getRange(i + 1, 2, 1, 2).setValues([[text, new Date().toISOString()]]);
+      return { ok: true };
+    }
+  }
+  sh.appendRow([sub, text, new Date().toISOString()]);
+  return { ok: true };
+}
+
+function drop_(p) {
+  var props = PropertiesService.getScriptProperties();
+  var info = verify_(p.idToken, props.getProperty("CLIENT_ID"));
+  if (!teacherOk_(info, props)) throw new Error("teacher");
+  var sub = String(p.sub || "");
+  if (!sub) throw new Error("sub");
+  var sh = sheet_();
+  var values = sh.getDataRange().getValues();
+  for (var i = values.length - 1; i >= 1; i--) {
+    if (String(values[i][1]) === sub) sh.deleteRow(i + 1);
+  }
+  var ns = noteSheet_();
+  var notes = ns.getDataRange().getValues();
+  for (var j = notes.length - 1; j >= 1; j--) {
+    if (String(notes[j][0]) === sub) ns.deleteRow(j + 1);
+  }
+  return { ok: true };
+}
+
+function notes_() {
+  var out = {};
+  var sh = noteSheet_();
+  var values = sh.getDataRange().getValues();
+  for (var i = 1; i < values.length; i++) if (values[i][0]) out[String(values[i][0])] = String(values[i][1] || "");
+  return out;
+}
+
+function noteSheet_() {
+  var ss = SpreadsheetApp.getActive();
+  var sh = ss.getSheetByName("Izoh");
+  if (!sh) {
+    sh = ss.insertSheet("Izoh");
+    sh.appendRow(["sub", "note", "updated"]);
+  }
+  if (sh.getLastRow() < 1) sh.appendRow(["sub", "note", "updated"]);
+  return sh;
 }
 
 function verify_(idToken, clientId) {

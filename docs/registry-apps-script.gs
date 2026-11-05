@@ -26,6 +26,8 @@ function handle_(q, body) {
   try {
     if (action === "lookup") return lookup_(p.code);
     if (action === "register") return register_(p);
+    if (action === "teacher") return teacher_(p);
+    if (action === "link") return link_(p);
     if (action === "ai") return ai_(p);
     return { ok: false, error: "action" };
   } catch (err) {
@@ -53,12 +55,103 @@ function register_(p) {
   var found = find_(code);
   if (found && found.email !== info.email) throw new Error("taken");
   var now = new Date().toISOString();
+  var subCol = col_(sh, "sub", 5) + 1;
   if (found) {
     sh.getRange(found.row, 1, 1, 5).setValues([[code, info.email, info.name || "", url, now]]);
+    sh.getRange(found.row, subCol).setValue(info.sub || "");
   } else {
-    sh.appendRow([code, info.email, info.name || "", url, now]);
+    sh.appendRow([code, info.email, info.name || "", url, now, info.sub || ""]);
   }
   return { ok: true, code: code, url: url };
+}
+
+/** Shu Google hisobining kodi. Boshqa o‘qituvchining qatori qaytmaydi. */
+function teacher_(p) {
+  var info = verify_(p.idToken);
+  var row = findIdentity_(info);
+  if (!row || !row.url) return { ok: false, error: "none" };
+  if (!row.sub) stamp_(row, info);
+  return teacherOut_(find_(row.code) || row);
+}
+
+/**
+ * Eski qatorda email yo‘q. O‘qituvchi kodini bir marta yuboradi.
+ * Jurnal veb-ilovasi whoami orqali egasini aytadi. Email mos kelmasa bog‘lanmaydi.
+ */
+function link_(p) {
+  var info = verify_(p.idToken);
+  var code = norm_(p.code);
+  var row = find_(code);
+  if (!row || !row.url) return { ok: false, error: "code" };
+  var mail = lower_(info.email);
+  var rowMail = lower_(row.email);
+  if (row.sub && row.sub === info.sub) return teacherOut_(row);
+  if (rowMail && rowMail === mail) {
+    stamp_(row, info);
+    return teacherOut_(find_(code));
+  }
+  if (rowMail && rowMail !== mail) return { ok: false, error: "taken" };
+  var owner = whoami_(row.url);
+  if (!owner.ok) return { ok: false, error: "whoami" };
+  if (lower_(owner.email) !== mail) return { ok: false, error: "owner" };
+  stamp_(row, info);
+  return teacherOut_(find_(code));
+}
+
+function whoami_(url) {
+  try {
+    var res = UrlFetchApp.fetch(url + (url.indexOf("?") >= 0 ? "&" : "?") + "action=whoami", { muteHttpExceptions: true, followRedirects: true });
+    var data = {};
+    try { data = JSON.parse(res.getContentText() || "{}"); } catch (e) { return { ok: false }; }
+    if (!data || data.ok !== true || !data.email) return { ok: false };
+    return { ok: true, email: String(data.email) };
+  } catch (err) {
+    return { ok: false };
+  }
+}
+
+function teacherOut_(row) {
+  return {
+    ok: true,
+    code: row.code,
+    url: row.url,
+    teacherName: row.name || "",
+    teacherEmail: row.email || "",
+    sub: row.sub || ""
+  };
+}
+
+function stamp_(row, info) {
+  var sh = sheet_();
+  sh.getRange(row.row, 2).setValue(info.email || "");
+  if (info.name) sh.getRange(row.row, 3).setValue(info.name);
+  sh.getRange(row.row, 5).setValue(new Date().toISOString());
+  sh.getRange(row.row, col_(sh, "sub", 5) + 1).setValue(info.sub || "");
+}
+
+function findIdentity_(info) {
+  var sh = sheet_();
+  var values = sh.getDataRange().getValues();
+  var subCol = col_(sh, "sub", 5);
+  var mail = lower_(info.email);
+  var best = null;
+  for (var i = 1; i < values.length; i++) {
+    var email = lower_(values[i][1]);
+    var sub = String(subCol < values[i].length ? values[i][subCol] : "");
+    var hit = (info.sub && sub && sub === info.sub) || (mail && email && email === mail);
+    if (!hit || !values[i][3]) continue;
+    var row = { row: i + 1, code: values[i][0], email: values[i][1], name: values[i][2], url: values[i][3], sub: sub, updated: String(values[i][4] || "") };
+    if (!best || row.updated > best.updated) best = row;
+  }
+  return best;
+}
+
+function lower_(s) { return String(s || "").trim().toLowerCase(); }
+
+function col_(sh, name, fallback) {
+  var header = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0];
+  for (var i = 0; i < header.length; i++) if (String(header[i]) === name) return i;
+  return fallback;
 }
 
 function verify_(idToken) {
@@ -78,9 +171,13 @@ function sheet_() {
   var sh = ss.getSheetByName("Reestr");
   if (!sh) {
     sh = ss.insertSheet("Reestr");
-    sh.appendRow(["code", "email", "name", "url", "updated"]);
+    sh.appendRow(["code", "email", "name", "url", "updated", "sub"]);
   }
-  if (sh.getLastRow() < 1) sh.appendRow(["code", "email", "name", "url", "updated"]);
+  if (sh.getLastRow() < 1) sh.appendRow(["code", "email", "name", "url", "updated", "sub"]);
+  var header = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0];
+  var hasSub = false;
+  for (var c = 0; c < header.length; c++) if (String(header[c]) === "sub") hasSub = true;
+  if (!hasSub) sh.getRange(1, Math.max(sh.getLastColumn(), 5) + 1).setValue("sub");
   return sh;
 }
 
@@ -89,7 +186,8 @@ function find_(code) {
   var values = sh.getDataRange().getValues();
   for (var i = 1; i < values.length; i++) {
     if (String(values[i][0]) === code) {
-      return { row: i + 1, code: values[i][0], email: values[i][1], name: values[i][2], url: values[i][3] };
+      var subCol = col_(sh, "sub", 5);
+      return { row: i + 1, code: values[i][0], email: values[i][1], name: values[i][2], url: values[i][3], sub: String(subCol < values[i].length ? values[i][subCol] : "") };
     }
   }
   return null;
