@@ -33,6 +33,20 @@
     for (const n of b) s += ALPHA[n % ALPHA.length];
     return s;
   }
+  function mailKey(s) {
+    const e = String(s || "").trim().toLowerCase();
+    const at = e.lastIndexOf("@");
+    if (at < 1) return e;
+    let user = e.slice(0, at);
+    let host = e.slice(at + 1);
+    if (host === "googlemail.com") host = "gmail.com";
+    if (host === "gmail.com") {
+      const plus = user.indexOf("+");
+      if (plus >= 0) user = user.slice(0, plus);
+      user = user.replace(/\./g, "");
+    }
+    return user + "@" + host;
+  }
   function jwtPayload(token) {
     const p = String(token || "").split(".")[1] || "";
     const b = atob(p.replace(/-/g, "+").replace(/_/g, "/"));
@@ -64,6 +78,17 @@
   }
   async function postPlain(url, obj) {
     await fetch(url, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(obj) });
+  }
+  async function postJson(url, obj) {
+    const join = url.indexOf("?") >= 0 ? "&" : "?";
+    const r = await fetch(url + join + "action=" + encodeURIComponent(obj.action || ""), {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(obj)
+    });
+    const text = await r.text();
+    try { return JSON.parse(text); }
+    catch (e) { throw new Error("javob"); }
   }
 
   const net = {
@@ -97,13 +122,11 @@
     },
     async teacher(token) {
       if (!CFG.registryUrl) return { ok: false, error: "none" };
-      const r = await jsonp(CFG.registryUrl, { action: "teacher", idToken: token });
-      return r || { ok: false, error: "none" };
+      return postJson(CFG.registryUrl, { action: "teacher", idToken: token });
     },
     async link(code, token) {
       if (!CFG.registryUrl) throw new Error("Sinf kodi hali ulanmagan. Sayt egasi reestrni qo‘yadi.");
-      const r = await jsonp(CFG.registryUrl, { action: "link", code: code, idToken: token });
-      return r || { ok: false, error: "link" };
+      return postJson(CFG.registryUrl, { action: "link", code: code, idToken: token });
     },
     async mark(url, token, sub, lab, gradeOverride) {
       const r = await jsonp(url, { action: "mark", idToken: token, sub: sub, lab: lab, gradeOverride: gradeOverride == null ? "" : gradeOverride });
@@ -142,10 +165,11 @@
     },
     async teacher(token) {
       const info = jwtPayload(token);
+      if (!info || !info.exp || Number(info.exp) * 1000 < Date.now()) return { ok: false, error: "token" };
       const m = loadMock();
       const code = Object.keys(m.registry).find(c => {
         const row = m.registry[c];
-        return row && ((row.sub && row.sub === info.sub) || (row.email && row.email === info.email));
+        return row && ((row.sub && row.sub === info.sub) || (row.email && mailKey(row.email) === mailKey(info.email)));
       });
       if (!code) return { ok: false, error: "none" };
       const row = m.registry[code];
@@ -414,7 +438,7 @@
     slot.appendChild(holder);
     loadGis().then(() => {
       try {
-        google.accounts.id.initialize({ client_id: CFG.clientId, callback: onCredential });
+        gisInit();
         google.accounts.id.renderButton(holder, { theme: "filled_blue", size: "large", text: "signin_with", shape: "rectangular", width: 320 });
       } catch (e) {
         if (msg) msg.textContent = "Google tugmasi ochilmadi. Mehmon sifatida kirishingiz mumkin — natija jurnalga yozilmaydi.";
@@ -432,12 +456,63 @@
       document.head.appendChild(s);
     });
   }
+  function tokenStale(token) {
+    try {
+      const info = jwtPayload(token);
+      if (!info || !info.exp) return true;
+      return Number(info.exp) * 1000 < Date.now() + 120000;
+    } catch (e) { return true; }
+  }
+  let credWait = null;
   function onCredential(resp) {
+    if (!resp || !resp.credential) return;
     const info = jwtPayload(resp.credential);
+    const keep = !!(credWait && credWait.keepMode);
     state.account = { sub: info.sub, email: info.email, name: info.name || info.email, token: resp.credential, tokenAt: Date.now() };
-    state.mode = null;
+    if (!keep) state.mode = null;
     save(state);
-    paint();
+    const waiting = credWait;
+    credWait = null;
+    if (waiting) waiting.resolve(resp.credential);
+    if (!keep) paint();
+  }
+  function gisInit() {
+    if (!CFG.clientId || !window.google || !google.accounts || !google.accounts.id) return;
+    google.accounts.id.initialize({ client_id: CFG.clientId, callback: onCredential, auto_select: true, cancel_on_tap_outside: false });
+  }
+  function freshIdToken(force) {
+    if (MOCK) {
+      if (!force && state.account && state.account.token && !tokenStale(state.account.token)) return Promise.resolve(state.account.token);
+      let old = {};
+      try { if (state.account && state.account.token) old = jwtPayload(state.account.token) || {}; } catch (e) { old = {}; }
+      const token = fakeJwt({
+        sub: (state.account && state.account.sub) || old.sub,
+        email: (state.account && state.account.email) || old.email,
+        name: (state.account && state.account.name) || old.name,
+        email_verified: true,
+        exp: Math.floor(Date.now() / 1000) + 3600
+      });
+      if (state.account) {
+        state.account.token = token;
+        state.account.tokenAt = Date.now();
+        save(state);
+      }
+      return Promise.resolve(token);
+    }
+    if (!force && state.account && state.account.token && !tokenStale(state.account.token)) return Promise.resolve(state.account.token);
+    return new Promise(resolve => {
+      let settled = false;
+      const finish = tok => { if (settled) return; settled = true; credWait = null; resolve(tok || null); };
+      const timer = setTimeout(() => finish(null), 8000);
+      credWait = { keepMode: true, resolve: tok => { clearTimeout(timer); finish(tok); } };
+      loadGis().then(() => {
+        gisInit();
+        google.accounts.id.prompt(n => {
+          const blocked = (n.isNotDisplayed && n.isNotDisplayed()) || (n.isSkippedMoment && n.isSkippedMoment());
+          if (blocked) { clearTimeout(timer); finish(null); }
+        });
+      }).catch(() => { clearTimeout(timer); finish(null); });
+    });
   }
   function signInMock(profile) {
     const token = fakeJwt({ sub: profile.sub, email: profile.email, name: profile.name, email_verified: true, exp: Math.floor(Date.now() / 1000) + 3600 });
@@ -499,24 +574,44 @@
   }
 
   let teacherJob = null;
+  function lookupErrorText(code) {
+    if (code === "token" || code === "exp") return "Google belgisi eskirgan. Qayta urinib, hisobni yangilang.";
+    if (code === "aud") return "Google belgisi bu sayt uchun emas.";
+    if (code === "action") return "Reestr skripti yangilanmagan. Sayt egasi yangi nusxani joylashi kerak.";
+    if (code === "javob") return "Reestr javobini o‘qib bo‘lmadi.";
+    if (code === "none") return "Bu hisobda jurnal yo‘q.";
+    return "Jurnalni olishda xato.";
+  }
   async function ensureTeacher() {
     if (!state.account || state.mode !== "teacher") return state.teacher || null;
     if (!MOCK && !CFG.registryUrl) return state.teacher || null;
     if (teacherJob) return teacherJob;
     teacherJob = (async () => {
+      state.lookup = { status: "loading", error: "" };
+      let rec = null;
       try {
-        const rec = await api().teacher(state.account.token);
-        if (rec && rec.ok && rec.code && rec.url) {
-          state.teacher = { code: rec.code, endpoint: rec.url, linked: true };
-          state.syncMsg = "";
-          save(state);
-          try { await refreshDrive(); } catch (e) { state.syncMsg = e.message || "Jadval yangilanmadi"; save(state); }
-          return state.teacher;
+        let token = await freshIdToken(false);
+        if (!token) token = state.account.token;
+        rec = await api().teacher(token);
+        if (rec && (rec.error === "token" || rec.error === "aud" || rec.error === "exp")) {
+          const again = await freshIdToken(true);
+          if (again) rec = await api().teacher(again);
         }
-        if (rec && rec.error === "action") state.syncMsg = "Reestr skripti yangilanmagan. Sayt egasi yangi nusxani joylashi kerak.";
       } catch (e) {
-        state.syncMsg = e.message || "";
+        rec = { ok: false, error: e && e.message === "javob" ? "javob" : "javob" };
       }
+      if (rec && rec.ok && rec.code && rec.url) {
+        state.teacher = { code: rec.code, endpoint: rec.url, linked: true };
+        state.lookup = { status: "ok", error: "" };
+        state.syncMsg = "";
+        save(state);
+        try { await refreshDrive(); } catch (e) { state.syncMsg = e.message || "Jadval yangilanmadi"; save(state); }
+        return state.teacher;
+      }
+      const err = (rec && rec.error) || "javob";
+      state.lookup = { status: err === "none" ? "none" : "error", error: err };
+      state.syncMsg = lookupErrorText(err);
+      save(state);
       if (state.teacher && state.teacher.code && state.teacher.endpoint) {
         state.teacher.linked = true;
         save(state);
@@ -643,21 +738,33 @@
     const pane = document.getElementById("tPane");
     if (!pane || document.getElementById("gDrive")) return;
     const linked = state.teacher && state.teacher.code && state.teacher.linked;
+    const look = state.lookup || { status: state.mode === "teacher" && state.account && !linked ? "loading" : "", error: "" };
     const tpl = CFG.templateUrl ? `<a class="sec" style="display:inline-block;padding:7px 14px;border-radius:6px;text-decoration:none" target="_blank" rel="noopener" href="${esc(CFG.templateUrl)}">Jadval nusxasini olish</a>` : `<span>Namuna jadval hali ulanmagan. Sayt egasi havolani qo‘ygach, shu yerda «Jadval nusxasini olish» chiqadi. Hozircha lokal jurnal ishlaydi.</span>`;
-    const setup = `<details id="gSetup"><summary>Birinchi marta jurnal sozlayman</summary>
+    const setup = `<p>Bu Google hisobida hali jurnal yo‘q. Birinchi marta shunday ochiladi.</p>
         <ol style="margin:8px 0 8px 18px;color:#cbd5e1;font-size:13.5px"><li>${tpl}</li><li>Nusxada: Kengaytmalar → Apps Script → Joylashtirish → Veb-ilova. Bajarish: Men. Kirish: Hamma.</li><li>…/exec manzilini quyiga qo‘ying.</li></ol>
         ${MOCK ? "" : `<input id="gExec" placeholder="https://script.google.com/macros/s/…/exec">`}
-        <div class="grow"><button type="button" id="gMint">${MOCK ? "Sinov kodini olish" : "Kodni olish"}</button></div></details>`;
+        <div class="grow"><button type="button" id="gMint">${MOCK ? "Sinov kodini olish" : "Kodni olish"}</button></div>`;
+    const advanced = `<details id="gAdv"><summary style="color:#64748b;font-size:12px">Qo‘lda bog‘lash</summary>
+        <label for="gOldCode">Integratsiya kodi</label><input id="gOldCode" maxlength="12" autocapitalize="characters" placeholder="Masalan K7M2QP">
+        <div class="grow"><button type="button" class="sec" id="gLink">Shu hisobga bog‘lash</button></div></details>`;
+    const errLine = look.error ? `<p style="color:#64748b;font-size:12px;margin:6px 0 0">reestr: ${esc(look.error)}</p>` : "";
+    let body = "";
+    if (linked) {
+      body = `<div class="gbig" id="gCodeBig">${esc(state.teacher.code)}</div><p>Shu kodni talabalarga bering. Talabalar va baholar Google jadvalingizdan keladi — telefon va kompyuterda bir xil.</p><div class="grow"><button type="button" id="gCopy">Kodni nusxalash</button><button type="button" class="sec" id="gPull">Jadvaldan yangilash</button><button type="button" class="sec" id="gNew">Yangi kod</button></div><p id="gDriveMsg">${esc(state.syncMsg || "")}</p>`;
+    } else if (look.status === "loading") {
+      body = `<p id="gDriveMsg">Jurnal qidirilmoqda…</p>`;
+    } else if (look.status === "none" && state.mode === "teacher" && state.account) {
+      body = setup + advanced + `<p id="gDriveMsg"></p>` + errLine;
+    } else if (state.mode === "teacher" && state.account) {
+      body = `<p>${esc(lookupErrorText(look.error || "javob"))}</p><div class="grow"><button type="button" id="gRetry">Qayta urinish</button></div>${errLine}${advanced}<p id="gDriveMsg"></p>`;
+    } else {
+      body = `<p>Kod olish uchun avval Google bilan kiring va «Men o‘qituvchiman» ni tanlang. Google hisobi panel paroli o‘rnini bosadi.</p><div class="grow"><button type="button" id="gOpenAuth">Google oynasini ochish</button></div>`;
+    }
     pane.insertAdjacentHTML("afterbegin", `<div class="gdrive" id="gDrive">
       <b>Google Drive jurnali</b>
       <p style="margin:6px 0;color:#94a3b8;font-size:13px">${state.account ? esc(state.account.email) : "Google bilan kirilmagan."} ${MOCK ? "· sinov rejimi (haqiqiy Drive emas)" : ""}</p>
       ${!MOCK && !CFG.registryUrl ? `<p>Sinf kodi hali ulanmagan. Sayt egasi reestrni qo‘yadi. Laboratoriya va lokal jurnal ishlaydi.</p>` : ""}
-      ${linked ? `<div class="gbig" id="gCodeBig">${esc(state.teacher.code)}</div><p>Shu kodni talabalarga bering. Talabalar va baholar Google jadvalingizdan keladi — telefon va kompyuterda bir xil.</p><div class="grow"><button type="button" id="gCopy">Kodni nusxalash</button><button type="button" class="sec" id="gPull">Jadvaldan yangilash</button><button type="button" class="sec" id="gNew">Yangi kod</button></div><p id="gDriveMsg">${esc(state.syncMsg || "")}</p>` :
-        (state.mode === "teacher" && state.account ? `<p>Bu Google hisobi hali jurnalga bog‘lanmagan. Kompyuterda olgan 6 belgili kodni bir marta yozing. Keyingi qurilmada kod so‘ralmaydi.</p>
-        <label for="gOldCode">Integratsiya kodi</label><input id="gOldCode" maxlength="12" autocapitalize="characters" placeholder="Masalan K7M2QP">
-        <div class="grow"><button type="button" id="gLink">Shu hisobga bog‘lash</button></div>
-        ${setup}<p id="gDriveMsg"></p>` :
-          `<p>Kod olish uchun avval Google bilan kiring va «Men o‘qituvchiman» ni tanlang. Google hisobi panel paroli o‘rnini bosadi.</p><div class="grow"><button type="button" id="gOpenAuth">Google oynasini ochish</button></div>`)}
+      ${body}
     </div>`);
     const card = document.getElementById("gDrive");
     if (card && !document.getElementById("gToGuide")) {
@@ -672,6 +779,14 @@
     }
     const open = document.getElementById("gOpenAuth");
     if (open) open.onclick = () => { state.mode = null; save(state); paint(); };
+    const retry = document.getElementById("gRetry");
+    if (retry) retry.onclick = async () => {
+      const msg = document.getElementById("gDriveMsg");
+      if (msg) msg.textContent = "Jurnal qidirilmoqda…";
+      state.lookup = { status: "loading", error: "" };
+      await ensureTeacher();
+      window.TEACH.Teacher.render();
+    };
     const linkBtn = document.getElementById("gLink");
     if (linkBtn) linkBtn.onclick = async () => {
       const msg = document.getElementById("gDriveMsg");
