@@ -38,13 +38,64 @@ input,textarea,select,[contenteditable="true"]{-webkit-user-select:text!importan
 #lec,#panel,#toc,.vp-body{touch-action:pan-y;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .term{touch-action:manipulation}
 #ink{pointer-events:none}#ink.on{pointer-events:auto}
-</style></head><body>
+</style>
+<style id="teach-css">
+header{flex-wrap:wrap}
+#teachBtn{flex:none;white-space:nowrap}
+#teacher{border:1px solid #334155;border-radius:14px;background:#1e293b;color:#e2e8f0;padding:0;width:min(1080px,calc(100vw - 16px));max-height:calc(100dvh - 16px);box-shadow:0 24px 70px rgba(0,0,0,.45)}
+#teacher::backdrop{background:rgba(2,6,23,.72)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid #334155}
+.dlg-h h3{margin:0;font-size:18px;font-weight:650}
+.dlg-b{padding:14px 16px 18px;overflow:auto;max-height:calc(100dvh - 78px);-webkit-overflow-scrolling:touch}
+.ttabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.ttabs button{background:#334155;color:#e2e8f0}
+.ttabs button.on{background:#2563eb}
+.tscroll{overflow:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+table.tt{border-collapse:collapse;width:100%;font-size:12.5px}
+table.tt th,table.tt td{border:1px solid #334155;padding:6px 7px;text-align:left;vertical-align:top}
+table.tt th{color:#94a3b8;font-weight:600;font-size:11.5px;background:#0f172a;position:sticky;top:0}
+.tag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700}
+.tag.ok{background:#14532d;color:#86efac}.tag.warn{background:#78350f;color:#fde68a}.tag.info{background:#1e3a8a;color:#bfdbfe}.tag.err{background:#7f1d1d;color:#fecaca}
+.tmsg{border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13.5px;line-height:1.45}
+.tmsg.info{background:#172554;border:1px solid #1d4ed8}.tmsg.ok{background:#052e16;border:1px solid #166534}.tmsg.err{background:#450a0a;border:1px solid #b91c1c}.tmsg.warn{background:#451a03;border:1px solid #b45309}
+.tgrid{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.tgrid .sec,.tgrid button{white-space:nowrap}
+.jcell{font-variant-numeric:tabular-nums;text-align:center;min-width:34px}
+.jcell.done{color:#86efac;font-weight:700}.jcell.prog{color:#93c5fd}
+.bar-row{display:grid;grid-template-columns:minmax(90px,1.3fr) 1fr auto;gap:8px;align-items:center;margin:4px 0;font-size:12.5px}
+.bar{height:8px;background:#0f172a;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:#60a5fa}
+.calc-hint{font-size:12.5px;line-height:1.4;color:#fbbf24;margin-top:4px}
+.hint-ask{margin-top:4px;background:#334155;font-size:12px;padding:4px 8px}
+#aiFab{position:fixed;right:14px;bottom:14px;z-index:8;display:inline-flex;gap:8px;align-items:center;height:40px;padding:0 14px;border-radius:999px;background:#7c3aed;color:#fff;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+#aiFab span{font-size:16px}
+#aiBox{position:fixed;right:14px;bottom:64px;z-index:8;width:min(400px,calc(100vw - 28px));max-height:min(540px,calc(100dvh - 90px));display:flex;flex-direction:column;background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.ai-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #334155}
+.ai-h b{font-size:14px}
+.ai-p{font-size:12px;color:#94a3b8;margin:8px 12px 0;line-height:1.4}
+.ai-log{flex:1;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:140px;-webkit-overflow-scrolling:touch}
+.ai-m{font-size:13.5px;line-height:1.45;padding:8px 10px;border-radius:12px;max-width:88%;white-space:pre-wrap}
+.ai-m.user{align-self:flex-end;background:#2563eb;color:#fff}
+.ai-m.assistant{align-self:flex-start;background:#334155;color:#e2e8f0}
+.ai-f{display:flex;gap:6px;padding:10px 12px;border-top:1px solid #334155}
+.ai-f input{flex:1;min-width:0}
+#teacher textarea{width:100%;background:#0f172a;color:#e2e8f0;border:1px solid #475569;border-radius:6px;padding:6px;font:inherit}
+#teacher input,#teacher select,#teacher textarea,#aiBox input{touch-action:manipulation}
+@media (max-width:800px){
+  #aiBox{left:8px;right:8px;width:auto;bottom:108px;max-height:min(62dvh,520px)}
+  #aiFab{right:8px;bottom:56px}
+  .dlg-h,.dlg-b{padding-left:10px;padding-right:10px}
+  table.tt{font-size:12px}
+}
+</style>
+</head><body>
 <div id="gate"><div class="card"><h2>🔒 Virtual laboratoriya</h2><p data-i="pw">Parolni kiriting</p><input id="pw" type="password"><br><br><button id="pwb">OK</button><p id="pwe" class="bad"></p><p style="font-size:12px;color:#94a3b8">Standart parol: 1234</p><div class="au-box"></div></div></div>
 <div id="about"><div class="card"><h2>⚡ Elektronika va signallarni qayta ishlash</h2><p>3D virtual laboratoriya · 14 ta laboratoriya ishi</p><div class="au-box"></div><br><button data-x="1">OK</button></div></div>
 <header><h1>⚡ <span data-i="title">Elektronika va signallarni qayta ishlash — 3D virtual laboratoriya</span></h1>
-<span id="who"></span><button id="abt" class="sec"></button><select id="lang"><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></header>
+<span id="who"></span><button id="abt" class="sec"></button><button type="button" id="teachBtn" class="sec">O‘qituvchi</button><select id="lang"><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></header>
 <div id="steps"></div>
 <main><div id="view"><div id="hint3d" data-i="hint3d">Sichqoncha: aylantirish / g'ildirak: yaqinlashtirish / o'ng tugma: surish</div></div><div id="panel"></div></main><div id="foot"></div>
+<dialog id="teacher"><div class="dlg-h"><h3 id="tTitle">O‘qituvchi paneli</h3><button type="button" class="sec" id="tClose" aria-label="Yopish">✕</button></div><div class="dlg-b" id="tBody"></div></dialog>
+
 <script>/**
  * @license
  * Copyright 2010-2021 Three.js Authors
@@ -1527,7 +1578,7 @@ pwOff:"Switch the power off first!",asmDone:"Circuit assembled correctly. Switch
 changeLab:"Other lab",newStudent:"New student"}};
 const LS="elektronika_lab_v1";
 let S=JSON.parse(localStorage.getItem(LS)||"null")||{lang:"uz",student:null,labId:null,labs:{}};
-const save=()=>localStorage.setItem(LS,JSON.stringify(S));
+const save=()=>{localStorage.setItem(LS,JSON.stringify(S)); if(window.ELAB_onSave) try{window.ELAB_onSave()}catch(e){}};
 const t=k=>(I18N[S.lang]||I18N.uz)[k]||I18N.uz[k]||k;
 const $=s=>document.querySelector(s);
 const fmt=(x,d=3)=>(isFinite(x)?Number(x).toPrecision(d):"—");
@@ -1838,10 +1889,10 @@ series:[{id:"a0",name:"Amplituda xar. R_yu = ∞, f = 1 kHz",sweep:"E",log:true,
  {id:"a1",name:"Amplituda xar. R_yu = 100 Ω, f = 1 kHz",sweep:"E",log:true,from:10,to:3000,fix:{RL:2,Rd:0,f:1000},x:"U_kir, mV",y:"U_chiq, mV",X:o=>o._o.Ub*1e3,Y:o=>o._o.Uo*1e3,min:10},
  {id:"fr",name:"AChX K(f), R_yu = 100 Ω, E = 100 mV",sweep:"f",log:true,from:1,to:1e6,fix:{RL:2,Rd:0,E:100},x:"f, Hz",y:"K",X:o=>o.f[0],Y:o=>o._o.Uo/o._o.Ub,min:12,logx:true}],
 tasks(v){const M=(RL,Rd)=>efModel(v,RL,Rd,1000),a=M(Infinity,0),z=M(Infinity,1e4),l=M(100,0);return[
- {id:"k",q:"R_yu = ∞, R_q = 0, f = 1 kHz: kuchlanish bo'yicha uzatish koeffitsienti K = U_chiq/U_kir",unit:"",ans:cabs(a.vo)/cabs(a.Ub)},
- {id:"kl",q:"R_yu = 100 Ω, R_q = 0: K = U_chiq/U_kir",unit:"",ans:cabs(l.vo)/cabs(l.Ub)},
- {id:"zin",q:"Kirish qarshiligi: R_q = 10 kΩ ulab, Z_kir = R_q·U_kir/(U_g − U_kir) (R_yu = ∞), kΩ",unit:"kΩ",ans:1e4*cabs(z.Ub)/(cabs(z.Ug)-cabs(z.Ub))/1e3},
- {id:"zout",q:"Chiqish qarshiligi: E ni o'zgartirmasdan, Z_chiq = R_yu·(U_salt/U_yu − 1), R_yu = 100 Ω, R_q = 0, Ω",unit:"Ω",ans:100*(cabs(a.vo)/cabs(l.vo)-1)},
+ {id:"k",q:"R_yu = ∞, R_q = 0, f = 1 kHz, E = 100 mV (cheklanmasin): K = U_chiq/U_kir",unit:"",ans:cabs(a.vo)/cabs(a.Ub)},
+ {id:"kl",q:"R_yu = 100 Ω, R_q = 0, f = 1 kHz, E = 100 mV: K = U_chiq/U_kir",unit:"",ans:cabs(l.vo)/cabs(l.Ub)},
+ {id:"zin",q:"Kirish qarshiligi: R_q = 10 kΩ, R_yu = ∞, E = 100 mV, f = 1 kHz. Z_kir = R_q·U_kir/(U_g − U_kir), kΩ",unit:"kΩ",ans:1e4*cabs(z.Ub)/(cabs(z.Ug)-cabs(z.Ub))/1e3},
+ {id:"zout",q:"Chiqish qarshiligi, E = 100 mV o'zgartirilmasin: Z_chiq = R_yu·(U_salt/U_yu − 1), R_yu = 100 Ω, R_q = 0, Ω",unit:"Ω",ans:100*(cabs(a.vo)/cabs(l.vo)-1)},
  {id:"um",q:"R_yu = 100 Ω da chiqish signalining manfiy yarim to'lqini cheklanadigan maksimal amplituda |U_chiq−|max, mV",unit:"mV",ans:l.lo*1e3}]},
 checks:[{q:"Emitter qaytargichida chiqish signali qayerdan olinadi?",o:["Emitterdan (C2 orqali yuklamaga)","Kollektordan","Bazadan"],c:0},
  {q:"Kollektor qanday ulanadi?",o:["To'g'ridan-to'g'ri +E_k ga (o'zgaruvchan tok bo'yicha umumiy)","R_K orqali umumiy simga","Ulanmaydi"],c:0},
@@ -1975,7 +2026,7 @@ series:[{id:"ia",name:"Invertorlovchi: AChX K(f), U_kir = 20 mV",sweep:"f",log:t
  {id:"im",name:"Invertorlovchi: amplituda xar., f = 1 kHz",sweep:"Ug",log:true,from:10,to:10000,fix:{sch:0,wave:0,f:1000},x:"U_kir, V",y:"U_chiq, V",X:o=>o._o.Uin,Y:o=>o._o.Uo,min:10},
  {id:"ig",name:"Integrator: AChX K(f), U_kir = 200 mV",sweep:"f",log:true,from:10,to:1e5,fix:{sch:2,wave:0,Ug:200},x:"f, Hz",y:"K",X:o=>o.f[0],Y:o=>o._o.Uo/o._o.Uin,min:12,logx:true}],
 tasks(v){return[
- {id:"ki",q:"Invertorlovchi kuchaytirgich: f = 1 kHz dagi K = U_chiq/U_kir (kichik signal)",unit:"",ans:cabs(opLin(v,0,1000))},
+ {id:"ki",q:"Invertorlovchi kuchaytirgich: f = 1 kHz dagi K = |U_chiq/U_kir| (kichik signal, amplitudalar nisbati; manfiy ishora bu yerga yozilmaydi)",unit:"",ans:cabs(opLin(v,0,1000))},
  {id:"kn",q:"Invertorlamaydigan kuchaytirgich: f = 1 kHz dagi K",unit:"",ans:cabs(opLin(v,1,1000))},
  {id:"fh",q:"Invertorlovchi kuchaytirgichning yuqori chegaraviy chastotasi f_yu (0,707·K₀, U_kir = 20 mV), kHz",unit:"kHz",ans:band(f=>cabs(opLin(v,0,f))).fH/1e3},
  {id:"sr",q:"Chiqish kuchlanishining o'sish tezligi SR (meandr, katta amplituda, |dU/dt|max), V/µs",unit:"V/µs",ans:v.SR},
@@ -2046,7 +2097,7 @@ function lcSim(v,c){const L=v.L*1e-6,r=v.r,C=c.C*1e-9*(1+v.dC),p=c.p,G=v.G,I0=v.
   if(n<40*spp&&n%10===0)st.push(u);if(n>=(P-4)*spp)ss.push(u)}
  let mx=-1e9,mn=1e9;ss.forEach(a=>{if(a>mx)mx=a;if(a<mn)mn=a});const Um=(mx-mn)/2,cr=[];for(let k=1;k<ss.length;k++)if(ss[k-1]<0&&ss[k]>=0)cr.push(k-1+(-ss[k-1])/(ss[k]-ss[k-1]));
  const f=Um>1e-3&&cr.length>=2?(cr.length-1)/((cr[cr.length-1]-cr[0])*dt):NaN;return{Um,f,T0,st,ss:ss.slice(-2*spp),p}}
-function lcPcr(v,Cn){const C=Cn*1e-9*(1+v.dC),L=v.L*1e-6,w=1/Math.sqrt(L*C),Rp=(v.r*v.r+(w*L)**2)/v.r,a=1/v.Rin,b=-v.G,cc=1/Rp;return(-b-Math.sqrt(b*b-4*a*cc))/(2*a)}
+function lcOnset(v,Cn,level){level=level||1;let lo=0.004,hi=0.35;if(!(lcSim(v,{C:Cn,p:hi,sch:1,view:0}).Um>level))return hi;for(let i=0;i<14;i++){const m=(lo+hi)/2;if(lcSim(v,{C:Cn,p:m,sch:1,view:0}).Um<level)lo=m;else hi=m}return(lo+hi)/2}
 LABS.push({id:12,ready:true,parts:["Q","R","R","R","L","L","C","C","CE"],wave:true,dmm:"Um",title:{uz:"LC-generator",ru:"LC-генератор",en:"LC oscillator"},
 variant(r){const Ic=+(1+1*r()).toFixed(2)*1e-3,Re=pick(r,[68,100,150]),b=Math.round(100+150*r());return{Vsw:9.5,L:pick(r,[100,150,220]),r:+(5+7*r()).toFixed(2),I0:Ic,G:1/(0.02585/Ic+Re),Re,b,Rin:b*(0.02585/Ic+Re),dC:+((r()*2-1)*0.03).toFixed(4)}},
 showVar(v){return[["Kontur g'altagi","L = "+v.L+" µH (yo'qotish qarshiligi noma'lum)"],["Kontur kondensatori","C (o'zgaruvchan), tolerantlik ±3 %"],["Tranzistor","n-p-n KT315, I_K0 ≈ "+(v.I0*1e3).toFixed(2)+" mA, R_E (shuntlanmagan) = "+v.Re+" Ω"],["TB koeffitsienti k_tb","0,005…0,8 (transformator M/L, Kollpitsda C1/C2, Xartlida L2/L1)"]]},
@@ -2056,12 +2107,12 @@ controls:[{id:"sch",type:"sel",label:"Sxema",o:["Transformatorli TB (Meyssner)",
 read(v,c){const o=lcSim(v,c),nz=x=>noise(x,1e-3);const w=c.view?{T:40*o.T0,ch:[{n:"CH1 U_kontur",col:"#facc15",y:o.st},{n:"CH2 U_TB",col:"#22d3ee",y:o.st.map(a=>a*c.p)}]}:{T:2*o.T0,ch:[{n:"CH1 U_kontur",col:"#facc15",y:o.ss},{n:"CH2 U_TB",col:"#22d3ee",y:o.ss.map(a=>a*c.p)}]};
  return{f:[nz(o.f/1e3),"kHz","f_gen",5],Um:[nz(o.Um),"V","U_m"],Ub:[nz(o.Um*c.p),"V","U_TB,m"],_o:o,_c:c,_w:w}},
 series:[{id:"fc",name:"f(C), k_tb = 0,3",sweep:"C",log:true,from:0.47,to:10,fix:{p:0.3},x:"C, nF",y:"f, kHz",X:o=>o._c.C,Y:o=>o._o.f/1e3,min:10,logx:true},
- {id:"um",name:"U_m(k_tb), C = 4,7 nF",sweep:"p",log:true,from:0.005,to:0.8,fix:{C:4.7},x:"k_tb",y:"U_m, V",X:o=>o._c.p,Y:o=>o._o.Um,min:12,logx:true}],
+ {id:"um",name:"U_m(k_tb), C = 4,7 nF — k_tb ni U_m = 1 V kesishmasidan o'qing",sweep:"p",from:0.008,to:0.18,fix:{C:4.7},x:"k_tb",y:"U_m, V",X:o=>o._c.p,Y:o=>o._o.Um,min:100}],
 tasks(v){const s=(C,p)=>lcSim(v,{C,p,sch:1,view:0}),a=s(4.7,0.3),b=s(1,0.3);return[
  {id:"f1",q:"Generatsiya chastotasi: C = 4,7 nF, k_tb = 0,3, kHz",unit:"kHz",ans:a.f/1e3},
  {id:"f2",q:"Generatsiya chastotasi: C = 1 nF, k_tb = 0,3, kHz",unit:"kHz",ans:b.f/1e3},
  {id:"L",q:"O'lchangan f (C = 4,7 nF) bo'yicha g'altak induktivligi L = 1/(4π²f²C), µH",unit:"µH",ans:1/(4*Math.PI**2*a.f**2*4.7e-9)*1e6},
- {id:"pcr",q:"Generatsiya boshlanadigan kritik TB koeffitsienti k_tb,kr (C = 4,7 nF)",unit:"",ans:lcPcr(v,4.7)},
+ {id:"pcr",q:"C = 4,7 nF: U_m = 1 V bo'ladigan TB koeffitsienti k_tb (grafikdan). Bu — generatsiya endi ko'rinadigan chegara",unit:"",ans:lcOnset(v,4.7)},
  {id:"um",q:"Barqaror amplituda U_m (C = 4,7 nF, k_tb = 0,3), V",unit:"V",ans:a.Um}]},
 checks:[{q:"Tebranish konturi qayerga ulanadi?",o:["Kollektor zanjiriga (L ∥ C, +E_k dan)","Emitterga ketma-ket","Baza bo'luvchisi o'rniga"],c:0},
  {q:"Teskari bog'lanish ishorasi:",o:["Musbat (TB kuchlanishi bazaga kirish bilan bir fazada)","Manfiy","Ahamiyatsiz"],c:0},
@@ -2759,4 +2810,5 @@ addEventListener("hashchange",()=>{hashLab();render()});
 hashLab();
 initBench();render();
 window.APP={S,LABS,Plus,go,render,C,B,auditBoard,ANCH,hole,focusBoard,get V(){return V}};
-</script><a href="../" id="bosh-sahifa-link" title="Bosh sahifa" style="position:fixed;left:10px;bottom:10px;z-index:2147483000;background:rgba(15,23,42,.85);color:#fff;font:600 14px/1 system-ui,sans-serif;padding:10px 14px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.35)">&#8962; Bosh sahifa</a><span id="mualliflik-huquqi" style="position:fixed;left:150px;bottom:16px;z-index:2147483000;background:rgba(15,23,42,.75);color:#e2e8f0;font:12px/1.2 system-ui,sans-serif;padding:5px 10px;border-radius:999px;pointer-events:none">© 2026 Oromiddinov S.B. · DGU 68679</span></body></html>
+window.ELAB={get S(){return S},LABS,lab,LD,Plus,grade,GRADES,$,t,I18N,C,makeVariant,fmt,mx,fmtR,AUTHOR,AU,sha,go,get V(){return V},set V(v){V=v},get render(){return render},set render(f){render=f},get stepCalc(){return stepCalc},set stepCalc(f){stepCalc=f},get bindReg(){return bindReg},set bindReg(f){bindReg=f},get stepReport(){return stepReport},set stepReport(f){stepReport=f},FONT_R,FONT_B};
+</script><script src="teach.js"></script><a href="../" id="bosh-sahifa-link" title="Bosh sahifa" style="position:fixed;left:10px;bottom:10px;z-index:2147483000;background:rgba(15,23,42,.85);color:#fff;font:600 14px/1 system-ui,sans-serif;padding:10px 14px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.35)">&#8962; Bosh sahifa</a><span id="mualliflik-huquqi" style="position:fixed;left:150px;bottom:16px;z-index:2147483000;background:rgba(15,23,42,.75);color:#e2e8f0;font:12px/1.2 system-ui,sans-serif;padding:5px 10px;border-radius:999px;pointer-events:none">© 2026 Oromiddinov S.B. · DGU 68679</span></body></html>
