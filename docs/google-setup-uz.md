@@ -132,6 +132,8 @@ Talaba va o‘qituvchi kalit kiritmaydi. Kalit sayt faylida ham yo‘q. Maslahat
 
 `registryUrl` o‘sha `/exec` bo‘lib qoladi. Saytni qayta yozish shart emas.
 
+Skript yana yangilandi: o‘qituvchi qidiruvi Gmail nuqtalarini va `googlemail.com` ni bir xil hisoblaydi, eskirgan belgini `exp` deb qaytaradi. `docs/registry-apps-script.gs` ni qayta joylab, **Новая версия** bilan deploy qiling. `/exec` o‘zgarmaydi. Sayt yangilansa ham, eskirgan belgi yangilanib, jurnal kod so‘ralmasdan ochiladi.
+
 Skript yana yangilandi: o‘qituvchi hisobi Google `sub` va email bilan saqlanadi. Yangi amallar: `teacher` (shu hisobning kodi va manzili) va `link` (eski qatorni kod orqali bog‘lash; jurnal `whoami` egasini tasdiqlaydi). `docs/registry-apps-script.gs` ni qayta joylab, **Новая версия** bilan deploy qiling. `/exec` o‘zgarmaydi.
 
 Jurnal namunasi ham yangilandi: `whoami`, baho (`mark`), izoh (`note`), o‘chirish (`drop`). Namuna jadvaldagi skriptni yangilang. Allaqachon nusxa olgan o‘qituvchi o‘z nusxasida ham shuni qiladi va **Yangi versiya** qilib joylaydi. Eski nusxa `list` ni qaytarar ekan, kod va talabalar ro‘yxati baribir tiklanadi. `whoami` bo‘lmasa, eski kodni bog‘lashda sayt aniq o‘zbekcha yo‘l ko‘rsatadi. Baho va izoh barcha qurilmalarda bir xil bo‘lishi uchun jurnal skripti yangilangan bo‘lishi kerak.
@@ -165,7 +167,7 @@ Shu matn panelda **Yo‘riqnoma** bo‘limida ham turadi. Drive ulanmasdan ochil
 4. Tugma o‘rniga «Google hali sozlanmagan» chiqsa, ega hali client ID qo‘ymagan. Lokal jurnal va **Mehmon** ishlaydi. Mehmon natijasi jurnalga yozilmaydi.
 5. **Men o‘qituvchiman**. **Men talabaman** talaba formasi.
 6. Yuqoridagi **O‘qituvchi** paneli Google hisobi bilan ochiladi. Parol so‘ralmaydi. Eski parol **123456** faqat Google ulanmagan brauzer uchun.
-7. Telefon yoki boshqa kompyuter: shu Gmail bilan kiring va **Men o‘qituvchiman** ni tanlang. Kod va talabalar jadvaldan o‘zi chiqadi. Skriptni qayta joylamang. Hisob reestrda topilmasa, kompyuterdagi 6 belgili kodni bir marta yozing.
+7. Telefon yoki boshqa kompyuter: shu Gmail bilan kiring va **Men o‘qituvchiman** ni tanlang. Kod so‘ralmaydi — jurnal o‘zi ochiladi. Xato chiqsa **Qayta urinish**. Kulrang `reestr:` satri sababni ko‘rsatadi.
 8. **Yo‘riqnoma** bo‘limi shu paytdan bor. Jurnal kartasidagi **Yo‘riqnoma** tugmasi ham shu yerni ochadi.
 
 ### 2. Jurnal namunasidan nusxa
@@ -261,7 +263,7 @@ Jadvaldagi `grade` ustuni endi 5, 4, 3 yoki 2. Qo‘shimcha ustunlar (oxiriga qo
 
 **Talaba ishladi, panel bo‘sh.** Panel jadvaldan o‘qiydi. Talaba Google bilan shu kodga ulangan bo‘lishi kerak. Mehmon yozuvi jadvalga tushmaydi.
 
-**Telefonda yana sozlash chiqdi.** Shu Gmail bilan kiring. Reestr hisobni tanisa, kod va talabalar o‘zi chiqadi. Hisob topilmasa, 6 belgili kodni bir marta yozing. Bog‘langan hisobda skript qadami chiqmaydi.
+**Telefonda jurnal ochilmadi.** Shu Gmail bilan kiring va **Qayta urinish** ni bosing. Google belgisi taxminan bir soatda eskiradi; sayt yangisini o‘zi so‘raydi. Kod so‘ralmaydi. `reestr: token` eskirgan belgi degani.
 
 **Jurnal tasdiqlanmadi.** Execute as **Me** emas yoki kirish **Anyone** emas. **Manage deployments** → qalamcha → shu ikki sozlama → **Deploy**, so‘ng saytda kodni qayta oling.
 

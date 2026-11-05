@@ -627,7 +627,7 @@
       if (st && st.mode === "teacher" && st.account) {
         this.google = true;
         this.auth = true;
-        if (b) b.innerHTML = `<p class="tmsg info">Hisobingiz tekshirilmoqda…</p>`;
+        if (b) b.innerHTML = `<p class="tmsg info">Jurnal qidirilmoqda…</p>`;
         if (window.ELAB_AUTH.ensureTeacher) await window.ELAB_AUTH.ensureTeacher();
         this.render();
         return;
@@ -847,7 +847,7 @@
           <li>Tugma chiqmasa, yozuv «Google hali sozlanmagan» bo‘ladi. Buni sayt egasi tuzatadi. Siz shu vaqtgacha lokal jurnal va <span class="ybtn">Mehmon</span> bilan dars o‘ta olasiz. Mehmon natijasi jurnalga yozilmaydi.</li>
           <li><span class="ybtn">Men o‘qituvchiman</span> ni bosing. <span class="ybtn">Men talabaman</span> ni tanlamang — u talaba formasi.</li>
           <li>Yuqoridagi <span class="ybtn">O‘qituvchi</span> paneli Google hisobingiz bilan ochiladi. Parol so‘ralmaydi. Eski parol <span class="ybtn">123456</span> faqat Google siz ulanmagan brauzer uchun.</li>
-          <li>Telefon yoki boshqa kompyuter: shu Gmail bilan kiring va <span class="ybtn">Men o‘qituvchiman</span> ni tanlang. Kod va talabalar jadvaldan o‘zi chiqadi. Skriptni qayta joylamang. Hisob topilmasa, kompyuterdagi 6 belgili kodni bir marta yozing.</li>
+          <li>Telefon yoki boshqa kompyuter: shu Gmail bilan kiring va <span class="ybtn">Men o‘qituvchiman</span> ni tanlang. Kod so‘ralmaydi — jurnal o‘zi ochiladi. Xato chiqsa <span class="ybtn">Qayta urinish</span> ni bosing. Kod maydoni oddiy yo‘lda yo‘q.</li>
           <li><span class="ybtn">Yo‘riqnoma</span> shu yerda, Drive ulanmasdan oldin ham bor. Google kartasidagi <span class="ybtn">Yo‘riqnoma</span> tugmasi ham shu bo‘limni ochadi.</li>
         </ol>
 
@@ -959,7 +959,7 @@
         <p><span class="ybtn">Sahifa topilmadi</span> (404). Kirish «Faqat men» qolgan yoki joylashtirish o‘chirilgan. Yangi joylashtirish qiling, manzilni qayta qo‘ying.</p>
         <p><span class="ybtn">Kodni o‘zgartirdim, talaba eski natijani ko‘ryapti.</span> Eski joylashtirish eski kodni ishlatadi. Boshqarish → qalamcha → versiya: <span class="ybtn">Yangi versiya</span> / <span class="ybtn">New version</span> → Joylashtirish.</p>
         <p><span class="ybtn">Avval kod oling.</span> Yangilashdan oldin 6-qadam kerak. Yo‘riqnoma baribir ochiladi.</p>
-        <p><span class="ybtn">Telefonda yana sozlash chiqdi.</span> Shu Gmail bilan kiring. Reestr hisobni tanisa, kod va talabalar o‘zi chiqadi. Hisob topilmasa, 6 belgili kodni bir marta yozing. Skript qadami bog‘langan hisobda chiqmaydi.</p>
+        <p><span class="ybtn">Telefonda jurnal ochilmadi.</span> Shu Gmail bilan kiring. Belgisi eskirgan bo‘lsa <span class="ybtn">Qayta urinish</span> yangi belgi oladi. Kod so‘ralmaydi. Kulrang <span class="ybtn">reestr:</span> qatori xato sababini ko‘rsatadi.</p>
         <p><span class="ybtn">Panel paroli esimda yo‘q.</span> Google bilan kirilganda parol kerak emas. Eski parol faqat shu brauzerda edi. Google jadvalidagi qatorlar o‘chmaydi.</p>
         <p><span class="ybtn">Token muddati.</span> Google belgisi taxminan bir soatda eskiradi. Talaba qayta <span class="ybtn">Google bilan kirish</span> qiladi.</p>
         <h3 id="yAi">AI maslahatchi — faqat sayt egasi</h3>

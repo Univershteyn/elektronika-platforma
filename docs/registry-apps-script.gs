@@ -83,8 +83,8 @@ function link_(p) {
   var code = norm_(p.code);
   var row = find_(code);
   if (!row || !row.url) return { ok: false, error: "code" };
-  var mail = lower_(info.email);
-  var rowMail = lower_(row.email);
+  var mail = mailKey_(info.email);
+  var rowMail = mailKey_(row.email);
   if (row.sub && row.sub === info.sub) return teacherOut_(row);
   if (rowMail && rowMail === mail) {
     stamp_(row, info);
@@ -133,10 +133,10 @@ function findIdentity_(info) {
   var sh = sheet_();
   var values = sh.getDataRange().getValues();
   var subCol = col_(sh, "sub", 5);
-  var mail = lower_(info.email);
+  var mail = mailKey_(info.email);
   var best = null;
   for (var i = 1; i < values.length; i++) {
-    var email = lower_(values[i][1]);
+    var email = mailKey_(values[i][1]);
     var sub = String(subCol < values[i].length ? values[i][subCol] : "");
     var hit = (info.sub && sub && sub === info.sub) || (mail && email && email === mail);
     if (!hit || !values[i][3]) continue;
@@ -148,6 +148,21 @@ function findIdentity_(info) {
 
 function lower_(s) { return String(s || "").trim().toLowerCase(); }
 
+function mailKey_(s) {
+  var e = lower_(s);
+  var at = e.lastIndexOf("@");
+  if (at < 1) return e;
+  var user = e.substring(0, at);
+  var host = e.substring(at + 1);
+  if (host === "googlemail.com") host = "gmail.com";
+  if (host === "gmail.com") {
+    var plus = user.indexOf("+");
+    if (plus >= 0) user = user.substring(0, plus);
+    user = user.replace(/\./g, "");
+  }
+  return user + "@" + host;
+}
+
 function col_(sh, name, fallback) {
   var header = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0];
   for (var i = 0; i < header.length; i++) if (String(header[i]) === name) return i;
@@ -158,9 +173,18 @@ function verify_(idToken) {
   if (!idToken) throw new Error("token");
   if (!CONFIG.CLIENT_ID || CONFIG.CLIENT_ID.indexOf("PASTE_") === 0) throw new Error("config");
   var res = UrlFetchApp.fetch("https://oauth2.googleapis.com/tokeninfo?id_token=" + encodeURIComponent(idToken), { muteHttpExceptions: true });
-  if (res.getResponseCode() !== 200) throw new Error("token");
-  var info = JSON.parse(res.getContentText());
-  if (info.aud !== CONFIG.CLIENT_ID && info.azp !== CONFIG.CLIENT_ID) throw new Error("aud");
+  var info = {};
+  try { info = JSON.parse(res.getContentText() || "{}"); } catch (e) { info = {}; }
+  if (res.getResponseCode() !== 200) {
+    var why = String(info.error_description || info.error || "");
+    if (/expired/i.test(why)) throw new Error("exp");
+    throw new Error("token");
+  }
+  var aud = String(info.aud || "").trim();
+  var azp = String(info.azp || "").trim();
+  if (aud !== CONFIG.CLIENT_ID && azp !== CONFIG.CLIENT_ID) throw new Error("aud");
+  var iss = String(info.iss || "");
+  if (iss && iss !== "accounts.google.com" && iss !== "https://accounts.google.com") throw new Error("aud");
   if (String(info.email_verified) !== "true") throw new Error("email");
   if (info.exp && Number(info.exp) * 1000 < Date.now()) throw new Error("exp");
   return info;
