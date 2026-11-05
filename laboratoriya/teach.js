@@ -929,6 +929,7 @@
           <li>Skript kodini <span class="ybtn">docs/registry-apps-script.gs</span> dagi yangi nusxa bilan almashtiring.</li>
           <li>Manzil o‘zgarmasligi uchun: <span class="ybtn">Начать развертывание</span> → <span class="ybtn">Управление развертываниями</span> → qalamcha → Version <span class="ybtn">Новая версия</span> → <span class="ybtn">Начать развертывание</span>. <span class="ybtn">/exec</span> o‘sha holicha qoladi.</li>
           <li>Birinchi chaqiruvda Google <span class="ybtn">UrlFetchApp</span> uchun yangi ruxsat so‘raydi. Tasdiqlang.</li>
+          <li>Skript yana yangilandi: maslahatchi tayyor sonni aytmaydi. Yangi faylni qayta joylab, <span class="ybtn">Новая версия</span> bilan yana deploy qiling.</li>
         </ol>
         <div class="ybox">Sayt egasi Cloud Console, reestr va namuna jadvalni bir marta sozlaydi. O‘qituvchi buni qilmaydi. Ega uchun qadamlar: docs/google-setup-uz.md</div>
       </div>`;
@@ -1110,9 +1111,16 @@
       return `Lab ${L.id} (${L.title && L.title.en}). Step ${ld.step}. ${g ? "Idea: " + g.idea.en : ""} Series: ${series || "none"}. Readings: ${live || "none"}. Calculations (status only, no expected values): ${calc || "not started"}.`;
     },
     systemPrompt() {
-      const name = { uz: "o‘zbek lotin yozuvida", ru: "по-русски", en: "in English" }[lang()];
-      return `You are a Socratic electronics laboratory tutor at Termez State Pedagogical Institute (author: Oromiddinov Sardorbek Botirovich) inside the virtual lab "Elektronika va signallarni qayta ishlash". The student is doing one of 14 labs on a 3D bench. Answer ONLY ${name}. Never give the numeric result the student must read or compute, and never give a truth-table bit string. Explain the formula, the unit, and the next action on the bench. If their value is wrong, name only the kind of mistake (order of magnitude, sign, unit, or format) without stating the correct number. Max 90 words. If the question is unrelated, refuse in one sentence.
-CURRENT STATE (do not recite it): ${this.context()}`;
+      const hint = lang() === "ru" ? "The page language is Russian." : lang() === "en" ? "The page language is English." : "The page language is Uzbek.";
+      return `You are a Socratic electronics laboratory guide at Termez State Pedagogical Institute, inside "Elektronika va signallarni qayta ishlash". You never solve the lab. You only give direction (yo‘nalish) and the next step.
+HARD RULES:
+- NEVER compute or state a final number, a measured result, a calculated result, or a truth-table bit string.
+- Tell the student which formula to write, which quantities to read on the simulator, their units, and the order of steps. Ask one short guiding question.
+- If they ask for the answer ("javobini ayt", "javobni ber", "скажи ответ", "tell me the answer"), refuse politely and give the next step instead.
+- You may check a number they already typed only qualitatively: order of magnitude, sign, or unit ("tartibi to‘g‘ri", "birlikni tekshiring"). Do not say the correct value.
+- Language: Uzbek Latin by default. If their latest message is Russian, answer in Russian. If it is English, answer in English. ${hint}
+- At most 90 words. Unrelated questions: one short refusal.
+CURRENT STATE (status only; do not turn these into the answer): ${this.context()}`;
     },
     async tryClaude(history) {
       if (!this.sample) return null;
@@ -1218,13 +1226,13 @@ CURRENT STATE (do not recite it): ${this.context()}`;
     offline(q) {
       const L = EL.lab(), ld = EL.LD(), g = guide(L.id);
       const n = norm(q);
-      const fish = /javobni (ayt|ber)|tayyor javob|nechchi|qancha chiq|sonini ayt|скажи ответ|готовый ответ|сколько получ|какое число|tell me the answer|correct answer|give the number|what is the value/.test(n);
+      const fish = /javobini ayt|javobni (ayt|ber)|tayyor (javob|son)|nechchi|necha chiq|qancha chiq|sonini ayt|hisoblab ber|aniq javob|to'g'ri javob|скажи ответ|дай ответ|посчитай|сколько (получ|будет|равно)|какое число|tell me the answer|correct answer|give (me )?the (number|answer|value)|what is the (value|answer)|solve it|calculate (it|the)/.test(n);
       const live = liveRead();
       const series = (L.series || []).map(s => `${s.name}: ${(ld.meas[s.id] || []).length}/${s.min}`).join("\n");
       let task = null;
       try { task = matchTask(L, n); } catch (e) { task = null; }
       const bits = [];
-      if (fish) bits.push(lang() === "ru" ? "Готовое число не даю." : lang() === "en" ? "I will not give the finished number." : "Tayyor sonni bermayman.");
+      if (fish) bits.push(lang() === "ru" ? "Готовое число не назову. Следующий шаг: запишите формулу, подставьте величины с приборов и проверьте единицу." : lang() === "en" ? "I will not state the finished number. Next step: write the formula, take the quantities from the instruments, and check the unit." : "Tayyor javobni aytmayman. Keyingi qadam: formulani yozing, kattaliklarni asbobdan oling va birlikni tekshiring.");
       if (task) {
         bits.push(formulaOf(L.id, task.id));
         const s = ld.calc && ld.calc[task.id];
@@ -1240,7 +1248,7 @@ CURRENT STATE (do not recite it): ${this.context()}`;
       if (ld.step === 4) {
         if (!task && g) bits.push(tx(g.meas));
         if (series) bits.push(series);
-        if (live) bits.push((lang() === "ru" ? "Сейчас приборы показывают: " : lang() === "en" ? "The instruments now read: " : "Hozir asboblar: ") + live);
+        if (live && !fish) bits.push((lang() === "ru" ? "Снимите с приборов и запишите сами: " : lang() === "en" ? "Read these on the instruments and write them yourself: " : "Asbobdan o‘zingiz yozing: ") + live);
       }
       if ((ld.step === 2 || ld.step === 3) && g) bits.push(tx(g.meas));
       return bits.filter(Boolean).join("\n\n");

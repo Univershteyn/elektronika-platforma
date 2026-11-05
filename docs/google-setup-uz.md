@@ -132,6 +132,8 @@ Talaba va o‘qituvchi kalit kiritmaydi. Kalit sayt faylida ham yo‘q. Maslahat
 
 `registryUrl` o‘sha `/exec` bo‘lib qoladi. Saytni qayta yozish shart emas.
 
+Skript yana yangilandi: model tayyor sonni aytmaydi, faqat yo‘nalish beradi. Mijoz yuborgan `system` xabari tashlanadi. Shu yangi `docs/registry-apps-script.gs` ni qayta joylab, **Новая версия** qilib yana deploy qiling. Aks holda eski joylashtirish ishlayveradi.
+
 ## Tasdiqlanmagan ilova — ega va o‘qituvchi uchun bir xil
 
 Apps Script birinchi marta joylansa, Google «bu ilovani tekshirmaganmiz» deydi. Bu siz yozgan skript. Ko‘k tugma bekor qiladi.
