@@ -2352,11 +2352,12 @@ const Plus={score(L,ld){const T=L.tasks(V);const pre=10*(ld.pre.n||0)/L.pre.leng
  const w=[1,1,0.7,0.4];let calc=0,acc=0;T.forEach(k=>{const s=ld.calc[k.id];if(!s)return;if(s.ok)calc+=30/T.length*w[s.tries]||0;acc+=20/T.length*Math.max(0,1-s.err/0.05)});
  const raw=pre+post+meas+calc+acc;return{pre,post,meas,calc,acc,raw,score:Math.min(100,Math.round(raw*1.085))}}};
 function stepReport(P,L,ld){const sc=Plus.score(L,ld);const T=L.tasks(V);const b=baho(L,ld);
- P.innerHTML=`<h2>${t("s7")}</h2>${bahoHTML(b)}${b.mark===2?`<p class="bad">Baho 2 — qoniqarsiz. Yetishmayotgan mezonlar yuqorida. Ishni to‘ldirib, xulosa va qarorni qayta saqlang.</p>`:""}<div class="card"><table><tr><td>${t("pre")}</td><td>${sc.pre.toFixed(1)} / 10</td></tr><tr><td>${t("post")}</td><td>${sc.post.toFixed(1)} / 20</td></tr><tr><td>${t("meas")}</td><td>${sc.meas.toFixed(1)} / 20</td></tr>
+ P.innerHTML=`<h2>${t("s7")}</h2>${bahoHTML(b)}${b.mark===2?`<p class="bad">Baho 2 — qoniqarsiz (${b.pct==null?"":b.pct+"%"}). 60 % dan past natijada sertifikat berilmaydi.</p>`:""}<div class="card"><table><tr><td>${t("pre")}</td><td>${sc.pre.toFixed(1)} / 10</td></tr><tr><td>${t("post")}</td><td>${sc.post.toFixed(1)} / 20</td></tr><tr><td>${t("meas")}</td><td>${sc.meas.toFixed(1)} / 20</td></tr>
  <tr><td>${t("calc")}</td><td>${sc.calc.toFixed(1)} / 30</td></tr><tr><td>${t("acc")}</td><td>${sc.acc.toFixed(1)} / 20</td></tr><tr><td>${t("bonus")}</td><td>× 1,085</td></tr><tr><th>${t("total")}</th><th style="font-size:22px">${sc.score} / 100</th></tr></table></div>
  <table><tr><th>Topshiriq</th><th>Javob</th><th>Xato</th></tr>${T.map(k=>{const s=ld.calc[k.id]||{};return`<tr><td style="text-align:left">${mx(k.q)}</td><td>${s.val??"—"} ${k.unit}</td><td class="${s.ok?"okc":"bad"}">${s.err!=null?(s.err*100).toFixed(1)+"%":"—"}</td></tr>`}).join("")}</table><br>
- <button id="pdf">📄 ${t("pdf")}</button> <button id="js" class="sec">${t("json")}</button> <button id="ch" class="sec">${t("changeLab")}</button> <button id="ns" class="sec">${t("newStudent")}</button>${certHTML(sc,ld)}`;
- $("#pdf").onclick=()=>Report.pdf(L,ld,sc);if($("#cert"))$("#cert").onclick=()=>Cert.pdf(L,ld,sc);$("#js").onclick=()=>{const b=new Blob([JSON.stringify({student:S.student,lab:L.id,variant:V,data:ld,score:sc},null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`lab${L.id}_${S.student.name}.json`;a.click()};
+ <button id="pdf">📄 ${t("pdf")}</button> <button id="js" class="sec">${t("json")}</button> <button id="ch" class="sec">${t("changeLab")}</button> <button id="ns" class="sec">${t("newStudent")}</button><div id="certBox">${certHTML(sc,ld,null)}</div>`;
+ $("#pdf").onclick=()=>Report.pdf(L,ld,sc);const armCert=()=>{const b=$("#cert");if(!b)return;b.onclick=async()=>{const eff=await resolveGrade(L,ld,sc);if(eff.mark<=2){const box=$("#certBox");if(box)box.innerHTML=certHTML(sc,ld,eff);return}Cert.pdf(L,ld,sc,eff)}};armCert();
+ if(window.ELAB_AUTH&&ELAB_AUTH.gradeOf)ELAB_AUTH.gradeOf(L.id).then(ov=>{const box=$("#certBox");if(!box)return;box.innerHTML=certHTML(sc,ld,ov);armCert()}).catch(()=>{});$("#js").onclick=()=>{const b=new Blob([JSON.stringify({student:S.student,lab:L.id,variant:V,data:ld,score:sc},null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`lab${L.id}_${S.student.name}.json`;a.click()};
  $("#ch").onclick=()=>{S.labId=null;save();render()};$("#ns").onclick=()=>{if(confirm("?")){S.student=null;S.labId=null;S.labs={};save();render()}}}
 function partsOf(L){return L.parts||({diode:["R","D"],bjt:["R","Q"],mosfet:["R","M"]})[L.part]||[]}
 function part(g,p,x,z){const M=(c,m=.2)=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:.5});
@@ -2465,38 +2466,51 @@ function baho(L,ld){
   {id:"ijod",name:"Ijodiy fikrlaydi",met:flags.ijod,detail:"Qaror "+qaror.length+" belgi (kamida 40)"},
   {id:"xulosa",name:"Mustaqil xulosa va qaror",met:flags.xulosa,detail:"Xulosa "+concl.length+" belgi va qaror "+qaror.length+" belgi"}
  ];
+ let pct=null;
+ try{if(L&&ld&&L.pre&&L.pre.length&&L.post&&L.post.length&&L.series&&L.series.length)pct=Plus.score(L,ld).score}catch(e){pct=null}
  let mark=2;
- if(MEZON_NEED[5].every(k=>flags[k]))mark=5;
- else if(MEZON_NEED[4].every(k=>flags[k]))mark=4;
- else if(MEZON_NEED[3].every(k=>flags[k]))mark=3;
+ if(pct!=null&&isFinite(pct))mark=markFromScore(pct);
+ else{
+  if(MEZON_NEED[5].every(k=>flags[k]))mark=5;
+  else if(MEZON_NEED[4].every(k=>flags[k]))mark=4;
+  else if(MEZON_NEED[3].every(k=>flags[k]))mark=3;
+ }
  const row=MEZON.find(x=>x.n===mark);
- return {mark,word:row.w,text:row.t,items,flags};
+ return {mark,word:row.w,text:row.t,items,flags,pct};
 }
 function mezShort(){return `<details class="mez"><summary>Baholash mezoni (5–2)</summary>
- <p><b>5 — a‘lo.</b> To‘liq tushunish, bilish, ifoda, aytib berish, tasavvur, mustaqil mushohada, amaliyot, ijodiy fikr, mustaqil xulosa va qaror.</p>
- <p><b>4 — yaxshi.</b> Mustaqil mushohada, amaliyot, tushunish, bilish, ifoda, aytib berish va tasavvur.</p>
- <p><b>3 — qoniqarli.</b> Amaliyot, tushunish, bilish, ifoda, aytib berish va tasavvur.</p>
- <p><b>2 — qoniqarsiz.</b> Fan dasturi o‘zlashtirilmagan, mohiyat tushunilmagan, tasavvur yo‘q.</p></details>`}
+ <p>Baho — 100 balllik natijaning foizi.</p>
+ <p><b>5 — a‘lo.</b> 90 % va undan yuqori.</p>
+ <p><b>4 — yaxshi.</b> 70 % dan 90 % gacha (90 kirmaydi).</p>
+ <p><b>3 — qoniqarli.</b> 60 % dan 70 % gacha (70 kirmaydi).</p>
+ <p><b>2 — qoniqarsiz.</b> 60 % dan past. Sertifikat berilmaydi.</p></details>`}
 function bahoHTML(b){const rows=b.items.map(it=>`<li class="${it.met?"baho-ok":"baho-no"}">${it.met?"✔":"✘"} <b>${it.name}</b> — ${it.detail}</li>`).join("");
- return `<div class="baho-card" id="bahoCard"><div class="mark">${b.mark} — ${b.word}</div><p>${b.text}</p><ul class="baho-list">${rows}</ul></div>`}
+ const pct=b.pct==null?"":" · "+b.pct+"%";
+ return `<div class="baho-card" id="bahoCard"><div class="mark">${b.mark} — ${b.word}${pct}</div><p>${b.text}</p><ul class="baho-list">${rows}</ul></div>`}
 const GRADES={uz:["a‘lo (5)","yaxshi (4)","qoniqarli (3)","qoniqarsiz (2)"],ru:["отлично (5)","хорошо (4)","удовлетворительно (3)","неудовлетворительно (2)"],en:["excellent (5)","good (4)","satisfactory (3)","unsatisfactory (2)"]};
-function grade(sc){return sc>=86?0:sc>=71?1:sc>=56?2:3}
+function markFromScore(sc){return sc>=90?5:sc>=70?4:sc>=60?3:2}
+function grade(sc){const n=markFromScore(sc);return n===5?0:n===4?1:n===3?2:3}
 function pointIndex(n){return n===5?0:n===4?1:n===3?2:3}
-const CL={uz:{btn:"Sertifikat yuklab olish",no:"Sertifikat berilmaydi: baho 2 (qoniqarsiz). Yetishmayotgan mezonlarni to‘ldiring.",need:"Sertifikat olish uchun barcha 8 bosqichni yakunlang.",grade:"Baho"},
- ru:{btn:"Скачать сертификат",no:"Сертификат не выдаётся: балл ниже 56. Пересдайте лабораторную работу.",need:"Для сертификата завершите все 8 этапов.",grade:"Оценка"},
- en:{btn:"Download certificate",no:"No certificate: score below 56. Please retake the lab.",need:"Complete all 8 steps to get a certificate.",grade:"Grade"}};
-function certHTML(sc,ld){const c=CL[S.lang]||CL.uz,b=baho(lab(),ld),gt=b.mark+" — "+b.word;
- if(!ld.t1||!ld.post.done)return`<div class="card"><small>${c.need}</small></div>`;
- if(b.mark===2)return`<div class="card"><b>${c.grade}: <span class=bad>${gt}</span></b><br><small class=bad>${c.no}</small></div>`;
+const CL={uz:{btn:"Sertifikat yuklab olish",no:"Sertifikat berilmaydi: ball 60 % dan past, baho 2 (qoniqarsiz). Sertifikat faqat 3, 4 va 5 bahoda beriladi.",ov:"Sertifikat berilmaydi: o‘qituvchi bahoni 2 (qoniqarsiz) qo‘ydi. Sertifikat faqat 3, 4 va 5 bahoda beriladi.",need:"Sertifikat olish uchun barcha 8 bosqichni yakunlang.",grade:"Baho"},
+ ru:{btn:"Скачать сертификат",no:"Сертификат не выдаётся: результат ниже 60 %, оценка 2. Сертификат только при оценках 3, 4 и 5.",ov:"Сертификат не выдаётся: преподаватель поставил 2. Сертификат только при оценках 3, 4 и 5.",need:"Для сертификата завершите все 8 этапов.",grade:"Оценка"},
+ en:{btn:"Download certificate",no:"No certificate: the score is under 60%, grade 2. A certificate is issued only for grades 3, 4 and 5.",ov:"No certificate: the teacher set grade 2. A certificate is issued only for grades 3, 4 and 5.",need:"Complete all 8 steps to get a certificate.",grade:"Grade"}};
+function localOverride(L){try{const TJ=window.TEACH&&window.TEACH.TJ;if(!TJ||!S.student)return null;const id=String(S.student.id||"").trim().toLowerCase().replace(/\s+/g,"");const lab=TJ.load().students[id]&&TJ.load().students[id].labs[L.id];if(lab&&lab.gradeOverride>=2&&lab.gradeOverride<=5)return lab.gradeOverride}catch(e){}return null}
+async function resolveGrade(L,ld,sc){const auto=markFromScore(sc.score);let ov=localOverride(L);if(window.ELAB_AUTH&&ELAB_AUTH.gradeOf){try{const r=await ELAB_AUTH.gradeOf(L.id);const n=r&&r.gradeOverride!=null&&r.gradeOverride!==""?Number(r.gradeOverride):null;if(n>=2&&n<=5)ov=n}catch(e){}}return{mark:ov||auto,auto,override:ov||null,pct:sc.score}}
+function certHTML(sc,ld,remote){const c=CL[S.lang]||CL.uz,b=baho(lab(),ld);
+ const picked=remote&&remote.gradeOverride!=null&&remote.gradeOverride!==""?remote.gradeOverride:(remote&&remote.override!=null?remote.override:null);
+ const raw=picked!=null&&picked!==""?Number(picked):localOverride(lab());
+ const ov=raw>=2&&raw<=5?raw:null;const mark=ov||b.mark,row=MEZON.find(x=>x.n===mark)||MEZON[3],pct=(b.pct==null?sc.score:b.pct);const gt=mark+" — "+row.w+" · "+pct+"%";
+ if(!ld.t1||!(ld.post&&ld.post.done))return`<div class="card"><small>${c.need}</small></div>`;
+ if(mark===2)return`<div class="card"><b>${c.grade}: <span class=bad>${gt}</span></b><br><small class=bad>${ov===2?c.ov:c.no}</small></div>`;
  return`<div class="card"><b>${c.grade}: <span class=okc>${gt}</span></b><br><br><button id="cert" class="ok">🎓 ${c.btn}</button></div>`}
 /* certificate number & verification code: deterministic hash of student + lab + score + completion time */
 function certIds(L,ld,sc){const s=S.student,base=[s.name.trim().toLowerCase(),s.group.trim(),s.id.trim(),L.id,sc.score,ld.t1].join("|");
  const h1=fnv(base),h2=fnv("v|"+base+"|"+h1),h3=fnv("w|"+h2);const hx=x=>x.toString(16).toUpperCase().padStart(8,"0");
  const B32="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let v="";for(let i=0;i<10;i++){v+=B32[(i<5?h2>>>(i*6):h3>>>((i-5)*6))&31]}
  return{no:`TerDPI-EL-2026-${String(L.id).padStart(2,"0")}-${hx(h1)}`,code:v.slice(0,5)+"-"+v.slice(5)}}
-const Cert={pdf(L,ld,sc){const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});let F="helvetica";
+const Cert={pdf(L,ld,sc,eff){const b0=baho(L,ld);const mark=eff&&eff.mark?eff.mark:b0.mark;if(mark<=2){alert((eff&&eff.override===2?(CL[S.lang]||CL.uz).ov:(CL[S.lang]||CL.uz).no));return}const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});let F="helvetica";
  try{d.addFileToVFS("dv.ttf",FONT_R);d.addFont("dv.ttf","DV","normal");d.addFileToVFS("dvb.ttf",FONT_B);d.addFont("dvb.ttf","DV","bold");F="DV"}catch(e){console.warn(e)}
- const W=297,H=210,cx=W/2,a=AUTHOR.uz,st=S.student,b=baho(L,ld),g=pointIndex(b.mark),ids=certIds(L,ld,sc),dt=new Date(ld.t1||Date.now());
+ const W=297,H=210,cx=W/2,a=AUTHOR.uz,st=S.student,b=MEZON.find(x=>x.n===mark)||MEZON[3],ids=certIds(L,ld,sc),dt=new Date(ld.t1||Date.now());
  const date=`${String(dt.getDate()).padStart(2,"0")}.${String(dt.getMonth()+1).padStart(2,"0")}.${dt.getFullYear()}`;
  const T=(x,y,s,sz,b,col=[20,30,70],al="center")=>{d.setFont(F,b?"bold":"normal");d.setFontSize(sz);d.setTextColor(...col);d.text(String(s),x,y,{align:al})};
  // background + decorative border
@@ -2513,7 +2527,7 @@ const Cert={pdf(L,ld,sc){const{jsPDF}=window.jspdf;const d=new jsPDF({orientatio
  T(cx,116,"quyidagi virtual laboratoriya ishini muvaffaqiyatli bajarganligini tasdiqlaydi:",11,0,[60,60,80]);
  const tl=d.splitTextToSize(`${L.id}-laboratoriya ishi: «${L.title.uz}»`,220);tl.forEach((l,i)=>T(cx,125+i*7,l,15,1,[20,48,140]));
  const yb=127+tl.length*7;
- T(cx,yb+3,`Ball: ${sc.score} / 100     ·     Baho: ${b.mark} — ${b.word}     ·     Yakunlangan sana: ${date}`,12,1,[30,30,50]);
+ T(cx,yb+3,`Ball: ${sc.score}% (${sc.score} / 100)     ·     Baho: ${mark} — ${b.w}     ·     Yakunlangan sana: ${date}`,12,1,[30,30,50]);
  // signature block
  const ys=178;d.setDrawColor(40,40,60);d.setLineWidth(0.3);d.line(30,ys,110,ys);
  T(70,ys+5,`O‘qituvchi: ${a.short}`,10,1,[30,30,50]);T(70,ys+10,a.pos,8.5,0,[80,80,100]);T(70,ys+14.5,a.inst,8.5,0,[80,80,100]);
@@ -2535,7 +2549,7 @@ const Report={pdf(L,ld,sc){const{jsPDF}=window.jspdf;const d=new jsPDF();let F="
  if(L.wave&&ld.osc){drawWave({c:cv,ctx:cv.getContext("2d")},ld.osc);if(y>200){d.addPage();y=15}ln("Ossillogramma (oxirgi yozilgan nuqta):",10);d.addImage(cv.toDataURL("image/jpeg",0.85),"JPEG",15,y,120,69);y+=73}
  if(y>220){d.addPage();y=15}ln("Hisoblash natijalari:",12,1);L.tasks(V).forEach(k=>{const s=ld.calc[k.id]||{};ln(`• ${k.q}: ${s.val??"—"} ${k.unit} ${s.ok?"(to'g'ri)":"(noto'g'ri)"}${s.err!=null?", xato "+(s.err*100).toFixed(1)+" %":""}`,10)});y+=2;
  ln("Xulosa:",12,1);ln(ld.concl||"—",10);y+=2;ln("Baholash:",12,1);ln(`Kirish testi ${sc.pre.toFixed(1)}/10; Yakuniy test ${sc.post.toFixed(1)}/20; O'lchash ${sc.meas.toFixed(1)}/20; Hisoblash ${sc.calc.toFixed(1)}/30; Aniqlik ${sc.acc.toFixed(1)}/20; ×1,085`);
- const bh=baho(L,ld);ln(`JAMI: ${sc.score} / 100   ·   baho: ${bh.mark} — ${bh.word}`,14,1);ln(bh.text,10);bh.items.forEach(it=>ln((it.met?"✔ ":"✘ ")+it.name+": "+it.detail,9));y+=6;ln(`O‘qituvchi: ${AUTHOR.uz.short} ______________        © ${AUTHOR.year} ${AUTHOR.uz.name} · ${AUTHOR.uz.inst}`,9);d.save(`Lab${L.id}_${S.student.name.replace(/\s+/g,"_")}.pdf`)}};
+ const bh=baho(L,ld);ln(`JAMI: ${sc.score}% (${sc.score} / 100)   ·   baho: ${bh.mark} — ${bh.word}`,14,1);ln(bh.text,10);bh.items.forEach(it=>ln((it.met?"✔ ":"✘ ")+it.name+": "+it.detail,9));if(bh.mark===2)ln("Sertifikat berilmaydi: ball 60 % dan past.",10);y+=6;ln(`O‘qituvchi: ${AUTHOR.uz.short} ______________        © ${AUTHOR.year} ${AUTHOR.uz.name} · ${AUTHOR.uz.inst}`,9);d.save(`Lab${L.id}_${S.student.name.replace(/\s+/g,"_")}.pdf`)}};
 
 /* ===================================================================================
    BREADBOARD + TERMINAL MODEL (scale: breadboard pitch 2.54 mm = 0.04 scene units,

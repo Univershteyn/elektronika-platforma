@@ -116,6 +116,9 @@
     async drop(url, token, sub) {
       const r = await jsonp(url, { action: "drop", idToken: token, sub: sub });
       return r || { ok: false, error: "drop" };
+    },
+    async gradeOf(url, token, code, lab) {
+      return jsonp(url, { action: "get", code: code, lab: lab, idToken: token });
     }
   };
   const mock = {
@@ -239,6 +242,15 @@
       if (m.sheets[code].notes) delete m.sheets[code].notes[sub];
       saveMock(m);
       return { ok: true };
+    },
+    async gradeOf(url, token, code, lab) {
+      const info = jwtPayload(token);
+      const m = loadMock();
+      const sh = m.sheets[String(code || "").toUpperCase()];
+      if (!sh) return { ok: false, error: "code" };
+      const row = sh.rows[info.sub + "|" + lab];
+      if (!row || !row.lab) return { ok: true, found: false };
+      return { ok: true, found: true, score: row.lab.score, gradeOverride: row.lab.gradeOverride == null ? null : row.lab.gradeOverride };
     }
   };
   const api = () => MOCK ? mock : net;
@@ -613,6 +625,11 @@
     if (legacyScript(res)) return { legacy: true };
     return res;
   }
+  async function gradeOf(labId) {
+    if (!state.account || state.mode !== "student" || !state.student) return null;
+    try { return await api().gradeOf(state.student.endpoint, state.account.token, state.student.code, labId); }
+    catch (e) { return null; }
+  }
   async function dropStudent(sub) {
     if (!state.account || !state.teacher) return { skipped: true };
     const res = await api().drop(state.teacher.endpoint, state.account.token, sub);
@@ -734,7 +751,7 @@
       window.TEACH.Teacher.render = function () { t0(); teacherCard(); };
     }
     window.ELAB_AUTH = {
-      allowJournal, signInMock, signOut, createCode, pushNow, refreshDrive, joinStudent, ensureTeacher, linkExisting, saveMark, saveNote, dropStudent,
+      allowJournal, signInMock, signOut, createCode, pushNow, refreshDrive, joinStudent, ensureTeacher, linkExisting, saveMark, saveNote, dropStudent, gradeOf,
       openGate() { state.mode = null; picking = false; save(state); paint(); },
       get state() { return state; }, mock: MOCK
     };

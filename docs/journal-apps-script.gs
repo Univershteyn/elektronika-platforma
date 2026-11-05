@@ -88,7 +88,13 @@ function getOne_(p) {
   var key = info.sub + "|" + Number(p.lab);
   var values = sheet_().getDataRange().getValues();
   for (var i = 1; i < values.length; i++) {
-    if (String(values[i][0]) === key) return { ok: true, found: true, updated: values[i][8] };
+    if (String(values[i][0]) === key) {
+      var labRow = {};
+      try { labRow = JSON.parse(values[i][17] || "{}"); } catch (e2) { labRow = {}; }
+      var ov = labRow.gradeOverride;
+      if ((ov == null || ov === "") && values[i].length > 20 && values[i][20] !== "") ov = values[i][20];
+      return { ok: true, found: true, updated: values[i][8], score: values[i][9], gradePoint: values[i][10], gradeOverride: ov === "" ? null : ov };
+    }
   }
   return { ok: true, found: false };
 }

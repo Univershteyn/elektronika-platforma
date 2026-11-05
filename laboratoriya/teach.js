@@ -732,7 +732,7 @@
           const items = (lab.baho && lab.baho.items) || lab.criteria || [];
           const checks = items.map(it => `<li class="${it.met ? "baho-ok" : "baho-no"}">${it.met ? "✔" : "✘"} ${esc(it.name)} — ${esc(it.detail || "")}</li>`).join("");
           const ov = lab.gradeOverride || "";
-          return `<div class="card"><b>${id}. ${esc(title)}</b><br>${lab.done ? `<span class="tag ok">${esc(tr("tp_done"))}</span>` : `<span class="tag info">${esc(stepName(lab.step))}</span>`} ${pt != null ? `<b>${pt} — ${esc(pointWord(pt))}</b>` : ""} ${lab.score != null ? `<small>ball ${lab.score}</small>` : ""}${lab.gradeOverride ? ` <span class="tag warn">o‘qituvchi</span>` : ""}<br><small>${esc(tr("tp_tests"))}: ${lab.preOk == null ? "—" : lab.preOk + "/" + lab.preN} · ${lab.postOk == null ? "—" : lab.postOk + "/" + lab.postN}</small>${text ? `<p>${esc(text.t)}</p>` : ""}${checks ? `<ul class="baho-list">${checks}</ul>` : ""}<label>Baho <select data-ov="${esc(String(id))}"><option value="" ${ov === "" ? "selected" : ""}>Avtomatik${lab.gradeAuto ? " (" + lab.gradeAuto + ")" : ""}</option>${[5, 4, 3, 2].map(n => `<option value="${n}" ${String(ov) === String(n) ? "selected" : ""}>${n} ${esc(pointWord(n))}</option>`).join("")}</select></label>${calc ? `<table class="tt" style="margin-top:6px"><tr><th>${esc(tr("h_formula"))}</th><th>${esc(tr("tp_score"))}</th><th></th><th></th></tr>${calc}</table>` : ""}</div>`;
+          return `<div class="card"><b>${id}. ${esc(title)}</b><br>${lab.done ? `<span class="tag ok">${esc(tr("tp_done"))}</span>` : `<span class="tag info">${esc(stepName(lab.step))}</span>`} ${pt != null ? `<b>${pt} — ${esc(pointWord(pt))}${lab.score != null ? " · " + lab.score + "%" : ""}</b>` : ""}${lab.gradeOverride ? ` <span class="tag warn">o‘qituvchi</span>` : ""}${pt === 2 ? ` <span class="tag err">sertifikat yo‘q</span>` : ""}<br><small>${esc(tr("tp_tests"))}: ${lab.preOk == null ? "—" : lab.preOk + "/" + lab.preN} · ${lab.postOk == null ? "—" : lab.postOk + "/" + lab.postN}</small>${text ? `<p>${esc(text.t)}</p>` : ""}${checks ? `<ul class="baho-list">${checks}</ul>` : ""}<label>Baho <select data-ov="${esc(String(id))}"><option value="" ${ov === "" ? "selected" : ""}>Avtomatik${lab.gradeAuto ? " (" + lab.gradeAuto + ")" : ""}</option>${[5, 4, 3, 2].map(n => `<option value="${n}" ${String(ov) === String(n) ? "selected" : ""}>${n} ${esc(pointWord(n))}</option>`).join("")}</select></label>${calc ? `<table class="tt" style="margin-top:6px"><tr><th>${esc(tr("h_formula"))}</th><th>${esc(tr("tp_score"))}</th><th></th><th></th></tr>${calc}</table>` : ""}</div>`;
         }).join("");
         pane.innerHTML = `<button type="button" class="sec" id="tBack">${esc(tr("tp_back"))}</button>
           <h3 style="margin:10px 0 4px">${esc(r.name)}</h3><p style="color:#94a3b8">${esc(r.group)} · ID ${esc(r.id)} · AI: ${r.ai || 0}</p>
@@ -929,23 +929,23 @@
         <p><span class="ybtn">Yangi kod</span> eski 6 belgini bekor qiladi. Jadvaldagi yozuvlar qoladi. Talabalarga yangi kodni bering.</p>
 
         <h3 id="yMez">Baholash mezoni (5–2)</h3>
-        <p>Har bir laboratoriya shu mezon bilan baholanadi. Talaba hisobotda baho, matn va qaysi band bajarilganini ko‘radi. Siz Talabalar bo‘limida bahoni o‘zgartira olasiz.</p>
-        <p><b>5 — a‘lo.</b> Talaba fanning mohiyatini to‘liq tushunadi, biladi, ifodalay oladi, aytib beradi, tasavvurga ega, mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, ijodiy fikrlaydi hamda mustaqil xulosa va qaror qabul qiladi.</p>
-        <p><b>4 — yaxshi.</b> Talaba mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
-        <p><b>3 — qoniqarli.</b> Talaba olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
-        <p><b>2 — qoniqarsiz.</b> Talaba fan dasturini o‘zlashtirmagan, fanning mohiyatini tushunmaydi hamda tasavvurga ega emas.</p>
+        <p>Baho 100 balllik natijaning foizidan chiqadi. Talaba hisobotda baho va foizni ko‘radi. Siz Talabalar bo‘limida bahoni o‘zgartira olasiz. 2 bahoda sertifikat berilmaydi, jumladan siz 2 qo‘yganingizda ham.</p>
+        <p><b>5 — a‘lo:</b> 90 % va undan yuqori. Talaba fanning mohiyatini to‘liq tushunadi, biladi, ifodalay oladi, aytib beradi, tasavvurga ega, mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, ijodiy fikrlaydi hamda mustaqil xulosa va qaror qabul qiladi.</p>
+        <p><b>4 — yaxshi (70 % dan 90 % gacha).</b> Talaba mustaqil mushohada yuritadi, olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
+        <p><b>3 — qoniqarli (60 % dan 70 % gacha).</b> Talaba olgan bilimini amalda qo‘llay oladi, fanning mohiyatini tushunadi, biladi, ifodalay oladi, aytib beradi va tasavvurga ega.</p>
+        <p><b>2 — qoniqarsiz (60 % dan past).</b> Talaba fan dasturini o‘zlashtirmagan. Sertifikat berilmaydi.</p>
         <ul class="baho-list">
-          <li><b>Biladi</b> — kirish testi kamida 60 %.</li>
-          <li><b>Tushunadi</b> — yakuniy test kamida 60 %.</li>
-          <li><b>To‘liq tushunadi</b> — ikkala test o‘rtacha kamida 80 % (faqat 5 uchun).</li>
+          <li><b>Biladi</b> — kirish testi.</li>
+          <li><b>Tushunadi</b> — yakuniy test.</li>
+          <li><b>To‘liq tushunadi</b> — ikkala testning o‘rtachasi.</li>
           <li><b>Ifodalay oladi, aytib beradi</b> — ikkala test yakunlangan.</li>
           <li><b>Tasavvurga ega</b> — nazariya ochilgan va testlarning yarmi to‘g‘ri.</li>
           <li><b>Amalda qo‘llay oladi</b> — sxema yig‘ilgan va barcha o‘lchov seriyalari yetarli.</li>
-          <li><b>Mustaqil mushohada</b> — hisoblarning kamida 75 % i ±5 % da to‘g‘ri (4 va 5 uchun).</li>
-          <li><b>Ijodiy fikrlaydi</b> — «Mustaqil qaror» maydoni kamida 40 belgi (5 uchun).</li>
-          <li><b>Mustaqil xulosa va qaror</b> — xulosa kamida 60 belgi va qaror kamida 40 belgi (5 uchun).</li>
+          <li><b>Mustaqil mushohada</b> — hisoblarning to‘g‘ri ulushi.</li>
+          <li><b>Ijodiy fikrlaydi</b> — «Mustaqil qaror» maydoni.</li>
+          <li><b>Mustaqil xulosa va qaror</b> — xulosa va qaror. Yakuniy baho shu bandlardan emas, 100 ballning foizidan chiqadi.</li>
         </ul>
-        <p>5 uchun shu bandlarning hammasi kerak. 4 uchun mushohada va amaliyot, lekin to‘liq tushunish va ijodiy qaror shart emas. 3 uchun amaliyot va tushuncha yetadi, mushohada shart emas. Qolgan hollarda baho 2.</p>
+        <p><b>4 — yaxshi:</b> 70 % dan 90 % gacha. <b>3 — qoniqarli:</b> 60 % dan 70 % gacha. <b>2 — qoniqarsiz:</b> 60 % dan past, sertifikat berilmaydi. Chegara: 90, 70 va 60 o‘z bahosiga kiradi (90 — 5, 70 — 4, 60 — 3).</p>
 
         <h3 id="y10">10. Tez-tez chiqadigan xatolar</h3>
         <p><span class="ybtn">Google tugmasi yo‘q.</span> Ega hali client ID qo‘ymagan. Lokal jurnal ishlaydi. Mehmon jurnalga yozmaydi.</p>
