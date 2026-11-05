@@ -16,7 +16,7 @@
   const UI = {
     uz: {
       teachBtn: "O‘qituvchi", teacher_panel: "O‘qituvchi paneli", journal: "O‘qituvchi jurnali",
-      tab_journal: "Jurnal", tab_list: "Talabalar", tab_an: "Tahlil", tab_lb: "Reyting", tab_set: "Sozlama",
+      tab_journal: "Jurnal",       tab_guide: "Yo‘riqnoma", tab_list: "Talabalar", tab_an: "Tahlil", tab_lb: "Reyting", tab_set: "Sozlama",
       tp_pw: "O‘qituvchi paroli", tp_login: "Kirish", tp_badpw: "Parol noto‘g‘ri.",
       tp_about: "Talaba paroli (1234) bu yerda ishlamaydi. Jurnal va ballar shu brauzerning xotirasida saqlanadi.",
       tp_std: "Standart parol: 123456 — kirgach, Sozlama bo‘limida almashtiring.",
@@ -62,7 +62,8 @@
     },
     ru: {
       teachBtn: "Преподаватель", teacher_panel: "Панель преподавателя", journal: "Журнал преподавателя",
-      tab_journal: "Журнал", tab_list: "Студенты", tab_an: "Аналитика", tab_lb: "Рейтинг", tab_set: "Настройки",
+      tab_journal: "Журнал", tab_guide: "Yo‘riqnoma", tab_list: "Студенты", tab_an: "Аналитика", tab_lb: "Рейтинг", tab_set: "Настройки",
+      guide_lang: "Qadamlar o‘zbek tilida — saytdagi tugmalar bilan bir xil.",
       tp_pw: "Пароль преподавателя", tp_login: "Войти", tp_badpw: "Неверный пароль.",
       tp_about: "Пароль студента (1234) здесь не подходит. Журнал хранится в памяти этого браузера.",
       tp_std: "Стандартный пароль: 123456 — после входа смените его в разделе «Настройки».",
@@ -108,7 +109,8 @@
     },
     en: {
       teachBtn: "Teacher", teacher_panel: "Teacher panel", journal: "Teacher journal",
-      tab_journal: "Journal", tab_list: "Students", tab_an: "Analytics", tab_lb: "Ranking", tab_set: "Settings",
+      tab_journal: "Journal", tab_guide: "Yo‘riqnoma", tab_list: "Students", tab_an: "Analytics", tab_lb: "Ranking", tab_set: "Settings",
+      guide_lang: "The steps are in Uzbek, matching the buttons on this site.",
       tp_pw: "Teacher password", tp_login: "Sign in", tp_badpw: "Wrong password.",
       tp_about: "The student password (1234) does not work here. The journal stays in this browser’s storage.",
       tp_std: "Default password: 123456 — change it under Settings after you sign in.",
@@ -612,10 +614,11 @@
         setTimeout(() => { const i = document.getElementById("tPw"); if (i) i.focus(); }, 40);
         return;
       }
-      const tabs = [["journal", "tab_journal"], ["list", "tab_list"], ["an", "tab_an"], ["lb", "tab_lb"], ["set", "tab_set"]];
+      const tabs = [["journal", "tab_journal"], ["guide", "tab_guide"], ["list", "tab_list"], ["an", "tab_an"], ["lb", "tab_lb"], ["set", "tab_set"]];
       b.innerHTML = `<div class="ttabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tt="${k}" class="${this.tab === k ? "on" : ""}">${esc(tr(n))}</button>`).join("")}</div><div id="tPane"></div>`;
       b.querySelectorAll("[data-tt]").forEach(x => x.onclick = () => { this.tab = x.dataset.tt; this.sel = null; this.render(); });
       if (this.tab === "journal") this.paneJournal();
+      else if (this.tab === "guide") this.paneGuide();
       else if (this.tab === "list") this.paneList();
       else if (this.tab === "an") this.paneAn();
       else if (this.tab === "lb") this.paneLb();
@@ -719,6 +722,140 @@
         return { r, n: labs.length, mean };
       }).filter(x => x.n).sort((a, b) => b.mean - a.mean);
       document.getElementById("tPane").innerHTML = rows.length ? `<table class="tt"><thead><tr><th>#</th><th>${esc(tr("tp_student"))}</th><th>${esc(tr("tp_group"))}</th><th>${esc(tr("lb_done"))}</th><th>${esc(tr("lb_mean"))}</th></tr></thead><tbody>${rows.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.r.name)}</td><td>${esc(x.r.group)}</td><td>${x.n}</td><td><b>${Math.round(x.mean)}</b></td></tr>`).join("")}</tbody></table>` : `<p class="tmsg warn">${esc(tr("an_none"))}</p>`;
+    },
+    paneGuide() {
+      const note = lang() === "uz" ? "" : tr("guide_lang");
+      document.getElementById("tPane").innerHTML = (note ? `<p class="tmsg info">${esc(note)}</p>` : "") + `<div class="yguide">
+        <p>Bu bo‘lim Google Drive ulanmasdan ham ochiladi. Qadamlarni bir marta bajaring. Talabaga faqat 6 belgili kod beriladi, uzun manzil emas.</p>
+        <p>Har bir tugmaning o‘zbekcha va inglizcha nomi yonma-yon yozilgan. Hisob tili qaysi bo‘lsa, o‘sha nom chiqadi. Cloud Console o‘zbekcha emas — uni faqat sayt egasi ochadi.</p>
+        <div class="yjumps">
+          <button type="button" data-yjump="y1">1. Kirish</button>
+          <button type="button" data-yjump="y2">2. Nusxa</button>
+          <button type="button" data-yjump="y3">3. Apps Script</button>
+          <button type="button" data-yjump="y4">4. Joylash</button>
+          <button type="button" data-yjump="y5">5. Ogohlantirish</button>
+          <button type="button" data-yjump="y6">6. Kod</button>
+          <button type="button" data-yjump="y7">7. Talaba</button>
+          <button type="button" data-yjump="y8">8. Yangilash</button>
+          <button type="button" data-yjump="y9">9. Parol</button>
+          <button type="button" data-yjump="y10">10. Xatolar</button>
+        </div>
+
+        <h3 id="y1">1. Saytga va panelga kirish</h3>
+        <ol>
+          <li>Brauzerda <span class="ybtn">https://elektronika-tdpi.uz</span> ni oching va virtual laboratoriyaga kiring.</li>
+          <li>Laboratoriya paroli <span class="ybtn">1234</span>. Tugma: <span class="ybtn">OK</span>.</li>
+          <li><span class="ybtn">Google bilan kirish</span> (inglizcha tugma: <span class="ybtn">Sign in with Google</span>). O‘z Gmail ingizni tanlang.</li>
+          <li>Tugma chiqmasa, yozuv «Google hali sozlanmagan» bo‘ladi. Buni sayt egasi tuzatadi. Siz shu vaqtgacha lokal jurnal va <span class="ybtn">Mehmon</span> bilan dars o‘ta olasiz. Mehmon natijasi jurnalga yozilmaydi.</li>
+          <li><span class="ybtn">Men o‘qituvchiman</span> ni bosing. <span class="ybtn">Men talabaman</span> ni tanlamang — u talaba formasi.</li>
+          <li>Yuqoridagi <span class="ybtn">O‘qituvchi</span> tugmasi. Panel paroli birinchi marta <span class="ybtn">123456</span>. Tugma: <span class="ybtn">Kirish</span>.</li>
+          <li><span class="ybtn">Yo‘riqnoma</span> shu yerda, Drive ulanmasdan oldin ham bor. Google kartasidagi <span class="ybtn">Yo‘riqnoma</span> tugmasi ham shu bo‘limni ochadi.</li>
+        </ol>
+
+        <h3 id="y2">2. Jurnal namunasidan nusxa olish</h3>
+        <p>Jurnal sizning Google Drive ingizda turadi. Sayt egasining jadvaliga yozilmaydi.</p>
+        <ol>
+          <li><span class="ybtn">Jurnal</span> bo‘limidagi kartada <span class="ybtn">Jadval nusxasini olish</span> ni bosing. Havola yo‘q bo‘lsa, egasi namuna manzilini hali qo‘ymagan — unga ayting.</li>
+          <li>Google nusxa sahifasini ochadi. Tugma: <span class="ybtn">Nusxa olish</span> yoki <span class="ybtn">Make a copy</span>. Ba’zi hisoblarda <span class="ybtn">Nusxa yaratish</span>.</li>
+          <li>Jadvalning o‘zi ochiq bo‘lsa, menyu: <span class="ybtn">Fayl → Nusxa olish</span> (inglizcha: <span class="ybtn">File → Make a copy</span>).</li>
+          <li>Nusxaga tushunarli nom bering, masalan «Elektronika jurnali — 2-kurs». U sizning Drive ingizda saqlanadi.</li>
+          <li>Namunaning o‘zida <span class="ybtn">Joylashtirish</span> / <span class="ybtn">Deploy</span> ni bosmang. Joylashtirish faqat sizning nusxangizda.</li>
+        </ol>
+
+        <h3 id="y3">3. Apps Scriptni ochish</h3>
+        <ol>
+          <li>O‘z nusxangizda yuqori menyu: <span class="ybtn">Kengaytmalar → Apps Script</span> (inglizcha: <span class="ybtn">Extensions → Apps Script</span>).</li>
+          <li>Kod oynasi ochiladi. Namuna to‘g‘ri bo‘lsa, kod allaqachon turadi. O‘chirmang va boshqa matn qo‘shmang.</li>
+          <li>Oyna bo‘sh bo‘lsa, nusxa skriptni olib o‘tmagan. To‘xtang va sayt egasiga ayting. Tasodifiy kod qo‘ymang.</li>
+          <li>Disk tugmasi yoki <span class="ybtn">Ctrl+S</span> bilan saqlang. Tugma nomi: <span class="ybtn">Saqlash</span> / <span class="ybtn">Save</span>.</li>
+        </ol>
+
+        <h3 id="y4">4. Veb-ilova qilib joylash</h3>
+        <ol>
+          <li>Skript oynasining o‘ng yuqorisida <span class="ybtn">Joylashtirish</span> / <span class="ybtn">Deploy</span> → <span class="ybtn">Yangi joylashtirish</span> / <span class="ybtn">New deployment</span>.</li>
+          <li>«Turni tanlang» / <span class="ybtn">Select type</span> yonidagi tishli g‘ildirakni bosing. Ro‘yxatdan <span class="ybtn">Veb-ilova</span> / <span class="ybtn">Web app</span> ni tanlang. G‘ildiraksiz tur chiqmaydi.</li>
+          <li>Tavsif ixtiyoriy. Masalan: Elektronika jurnali.</li>
+          <li><span class="ybtn">Bajarish</span> / <span class="ybtn">Execute as</span>: <span class="ybtn">Men</span> / <span class="ybtn">Me</span>. «Foydalanuvchi» / <span class="ybtn">User accessing the web app</span> ni tanlamang. Yozuv sizning hisobingizdan ketishi kerak.</li>
+          <li><span class="ybtn">Kimlar kira oladi</span> / <span class="ybtn">Who has access</span>: <span class="ybtn">Hamma</span> / <span class="ybtn">Anyone</span>. Ba’zi ekranlarda <span class="ybtn">Anyone, even anonymous</span>. <span class="ybtn">Faqat men</span> / <span class="ybtn">Only myself</span> va faqat «Google hisobi borlar» / <span class="ybtn">Anyone with a Google account</span> talaba yozuvini qabul qilmaydi: sayt natijani alohida so‘rovdan yuboradi.</li>
+          <li><span class="ybtn">Joylashtirish</span> / <span class="ybtn">Deploy</span> ni bosing.</li>
+        </ol>
+
+        <h3 id="y5">5. «Tasdiqlanmagan ilova» ogohlantirishi</h3>
+        <p>Bu sizning nusxangiz. Google yozuvni ko‘rib chiqmaganini aytadi. Jurnal buzilgan degani emas. Ko‘k tugma bekor qiladi — uni bosmang.</p>
+        <ol>
+          <li>Birinchi oyna: <span class="ybtn">Ruxsatlarni ko‘rib chiqish</span> / <span class="ybtn">Review permissions</span>.</li>
+          <li>Shu jadval turgan Gmail ni tanlang.</li>
+          <li>Sarlavha: <span class="ybtn">Google bu ilovani tasdiqlamagan</span> yoki <span class="ybtn">Google hasn’t verified this app</span>. Ko‘k tugma <span class="ybtn">Xavfsizlikka qaytish</span> / <span class="ybtn">Back to safety</span> — bosilmaydi.</li>
+          <li>Pastki chapdagi mayda yozuv: <span class="ybtn">Kengaytirilgan</span> yoki <span class="ybtn">Qo‘shimcha</span> / <span class="ybtn">Advanced</span>.</li>
+          <li>So‘ng yangi havola: <span class="ybtn">… ga o‘tish (xavfli)</span> / <span class="ybtn">Go to … (unsafe)</span>. Nuqtalar o‘rnida skript nomi turadi. Shu havolani bosing.</li>
+          <li>Yangiroq ekranda <span class="ybtn">Advanced</span> o‘rniga <span class="ybtn">Davom etish</span> / <span class="ybtn">Continue</span> chiqishi mumkin. Davom etish oldinga o‘tkazadi. <span class="ybtn">Back to safety</span> esa bekor qiladi.</li>
+          <li>Keyingi ro‘yxatda jadvalga yozish va tashqi tekshiruv so‘raladi. Inglizcha matn taxminan: <span class="ybtn">See, edit, create, and delete all your Google Sheets spreadsheets</span> va <span class="ybtn">Connect to an external service</span>. O‘zbekcha hisobda: jadvallarni ko‘rish, tahrirlash, yaratish va o‘chirish. Bu ruxsat sizning hisobingizga. Talaba bunday oyna ko‘rmaydi.</li>
+          <li><span class="ybtn">Ruxsat berish</span> / <span class="ybtn">Allow</span>. Ba’zi ekranlarda yana <span class="ybtn">Davom etish</span> / <span class="ybtn">Continue</span>.</li>
+        </ol>
+        <div class="ybox">Ruxsatni bir marta berasiz. Kodni keyin o‘zgartirsangiz, Google qayta so‘rashi mumkin. Yana shu yo‘l: Kengaytirilgan → ga o‘tish (xavfli) → Ruxsat berish.</div>
+
+        <h3 id="y6">6. /exec manzil va 6 belgili kod</h3>
+        <ol>
+          <li>Joylashtirish tugagach, oyna <span class="ybtn">Veb-ilova URL</span> / <span class="ybtn">Web app</span> manzilini ko‘rsatadi. U <span class="ybtn">https://script.google.com/macros/s/…/exec</span> bilan tugaydi.</li>
+          <li><span class="ybtn">Nusxalash</span> / <span class="ybtn">Copy</span>. Oxiri <span class="ybtn">/exec</span> bo‘lsin. <span class="ybtn">/dev</span> sinov manzili — sinf uchun yaramaydi.</li>
+          <li><span class="ybtn">Tayyor</span> / <span class="ybtn">Done</span>.</li>
+          <li>Saytga qayting. <span class="ybtn">Jurnal</span> kartasidagi maydonga shu manzilni qo‘ying. Tugma: <span class="ybtn">Kodni olish</span>.</li>
+          <li>6 ta harf va raqam chiqadi (masalan, K7M2QP). <span class="ybtn">Kodni nusxalash</span>. Kodni doskaga yozing. /exec manzilini talabaga yubormang.</li>
+          <li>Kodni joylaganingizdan keyin darhol oling. Birinchi marta bosgan Google hisobi shu jadvalning egasi bo‘lib yoziladi. Boshqa hisob keyin kodni almashtira olmaydi.</li>
+          <li>Manzilni keyin topish: <span class="ybtn">Joylashtirish → Joylashtirishlarni boshqarish</span> / <span class="ybtn">Deploy → Manage deployments</span>. Veb-ilova qatoridagi manzilni nusxalang.</li>
+        </ol>
+
+        <h3 id="y7">7. Talabaga nima deyiladi</h3>
+        <ol>
+          <li><span class="ybtn">Google bilan kirish</span>, so‘ng <span class="ybtn">Men talabaman</span>.</li>
+          <li>Ism, familiya, kurs (1–4) va guruh raqami (1–30). Kod maydoniga sizning 6 belgingiz.</li>
+          <li><span class="ybtn">Jurnalga ulanish</span>. Noto‘g‘ri kodda «Kod topilmadi» chiqadi.</li>
+          <li>Laboratoriya: kirish testi, o‘lchov, hisob, xulosa va baho shu jadvalning <span class="ybtn">Jurnal</span> varag‘iga tushadi.</li>
+          <li><span class="ybtn">Mehmon sifatida davom etish</span> laboratoriyani ochadi, lekin jurnalga yozmaydi.</li>
+        </ol>
+
+        <h3 id="y8">8. Drive dan yangilash va eksport</h3>
+        <ol>
+          <li><span class="ybtn">Google Drive dan yangilash</span> paneldagi jadvalni sizning Google jadvalingizdagi qatorlar bilan to‘ldiradi. Dars boshida bir marta bosing. Qatorlar soni tugma ostida chiqadi.</li>
+          <li><span class="ybtn">Jurnalni PDF</span> — albom varaq, 14 ta ish ustuni.</li>
+          <li><span class="ybtn">CSV (anonim)</span> — ismsiz jadval.</li>
+          <li><span class="ybtn">JSON: to‘liq (ism bilan)</span> — zaxira nusxa. Boshqa kompyuterga <span class="ybtn">JSON import</span> bilan qaytadi.</li>
+          <li><span class="ybtn">JSON: xAPI jurnali (anonim)</span> — ismsiz hodisalar ro‘yxati.</li>
+          <li>Talaba o‘zining «PDF hisobot» ini o‘zi yuklab oladi. Grafikli hisobot panelda emas.</li>
+          <li>Internet uzilsa, ish shu brauzerda davom etadi. Ulanish qaytganida talaba natijasi qayta yuboriladi. Panelda ko‘rish uchun yangilashni yana bosing.</li>
+        </ol>
+
+        <h3 id="y9">9. Panel parolini almashtirish</h3>
+        <ol>
+          <li><span class="ybtn">Sozlama</span> bo‘limi.</li>
+          <li>Maydon: <span class="ybtn">Yangi parol (kamida 6 belgi)</span>. Tugma: <span class="ybtn">Saqlash</span>.</li>
+          <li>Yangi parol faqat shu brauzerda saqlanadi. Laboratoriya paroli <span class="ybtn">1234</span> o‘sha holicha qoladi.</li>
+          <li><span class="ybtn">Jurnal</span> dagi <span class="ybtn">Chiqish</span> panelni yopadi. Keyingi safar yangi parol so‘raladi.</li>
+        </ol>
+        <p><span class="ybtn">Yangi kod</span> eski 6 belgini bekor qiladi. Jadvaldagi yozuvlar qoladi. Talabalarga yangi kodni bering.</p>
+
+        <h3 id="y10">10. Tez-tez chiqadigan xatolar</h3>
+        <p><span class="ybtn">Google tugmasi yo‘q.</span> Ega hali client ID qo‘ymagan. Lokal jurnal ishlaydi. Mehmon jurnalga yozmaydi.</p>
+        <p><span class="ybtn">Namuna havolasi yo‘q.</span> Ega <span class="ybtn">templateUrl</span> ni qo‘ymagan. Nusxani o‘zingiz ocholmaysiz.</p>
+        <p><span class="ybtn">origin_mismatch.</span> Sayt manzili Cloud Console dagi ro‘yxatda yo‘q yoki oxirida qo‘shimcha yo‘l bor. To‘g‘ri yozuv: https://elektronika-tdpi.uz — buni ega tuzatadi.</p>
+        <p><span class="ybtn">Kod topilmadi.</span> Kod xato, bo‘shliq bor, yoki siz <span class="ybtn">Yangi kod</span> bosgansiz. Doskadagi kodni yangisi bilan almashtiring.</p>
+        <p><span class="ybtn">Manzil …/exec bo‘lishi kerak.</span> Maydonga jadval havolasi, /dev yoki bo‘shliq tushgan. Veb-ilova oynasidagi manzilni qayta nusxalang.</p>
+        <p><span class="ybtn">Talaba ishladi, panel bo‘sh.</span> Avval <span class="ybtn">Google Drive dan yangilash</span>. Talabaning brauzeri bilan sizning brauzeringiz lokal jurnalni bo‘lishmaydi.</p>
+        <p><span class="ybtn">Jurnal tasdiqlanmadi</span> yoki yangilash xato. Execute as <span class="ybtn">Me</span> emas, yoki kirish <span class="ybtn">Anyone</span> emas. <span class="ybtn">Joylashtirishlarni boshqarish</span> → qalamcha → shu ikki sozlama → <span class="ybtn">Joylashtirish</span>. So‘ng saytda kodni qayta oling.</p>
+        <p><span class="ybtn">Xavfsizlikka qaytish</span> bosilgan. Ruxsat bekor bo‘lgan. Joylashtirishni qaytaring va 5-qadam: Kengaytirilgan → ga o‘tish (xavfli) → Ruxsat berish.</p>
+        <p><span class="ybtn">Sahifa topilmadi</span> (404). Kirish «Faqat men» qolgan yoki joylashtirish o‘chirilgan. Yangi joylashtirish qiling, manzilni qayta qo‘ying.</p>
+        <p><span class="ybtn">Kodni o‘zgartirdim, talaba eski natijani ko‘ryapti.</span> Eski joylashtirish eski kodni ishlatadi. Boshqarish → qalamcha → versiya: <span class="ybtn">Yangi versiya</span> / <span class="ybtn">New version</span> → Joylashtirish.</p>
+        <p><span class="ybtn">Avval kod oling.</span> Yangilashdan oldin 6-qadam kerak. Yo‘riqnoma baribir ochiladi.</p>
+        <p><span class="ybtn">Panel paroli esimda yo‘q.</span> U faqat shu brauzerda. Sayt ma’lumotini o‘chirsangiz, parol yana 123456 bo‘ladi va shu kompyuterdagi lokal jurnal ham ketadi. Google jadvalidagi qatorlar o‘chmaydi.</p>
+        <p><span class="ybtn">Token muddati.</span> Google belgisi taxminan bir soatda eskiradi. Talaba qayta <span class="ybtn">Google bilan kirish</span> qiladi.</p>
+        <div class="ybox">Sayt egasi Cloud Console, reestr va namuna jadvalni bir marta sozlaydi. O‘qituvchi buni qilmaydi. Ega uchun qadamlar: docs/google-setup-uz.md</div>
+      </div>`;
+      document.getElementById("tPane").querySelectorAll("[data-yjump]").forEach(btn => {
+        btn.onclick = () => {
+          const el = document.getElementById(btn.dataset.yjump);
+          if (el) el.scrollIntoView({ block: "start" });
+        };
+      });
     },
     paneSet() {
       const j = this.store();

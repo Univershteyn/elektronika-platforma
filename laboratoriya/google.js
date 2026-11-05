@@ -422,7 +422,7 @@
     const pane = document.getElementById("tPane");
     if (!pane || document.getElementById("gDrive")) return;
     const linked = state.teacher && state.teacher.code;
-    const tpl = CFG.templateUrl ? `<a class="sec" style="display:inline-block;padding:7px 14px;border-radius:6px;text-decoration:none" target="_blank" rel="noopener" href="${esc(CFG.templateUrl)}">Jadval nusxasini olish</a>` : `<span style="color:#94a3b8">Namuna havolasi google-config.js da yo‘q. Yo‘riqnoma: docs/google-setup-uz.md</span>`;
+    const tpl = CFG.templateUrl ? `<a class="sec" style="display:inline-block;padding:7px 14px;border-radius:6px;text-decoration:none" target="_blank" rel="noopener" href="${esc(CFG.templateUrl)}">Jadval nusxasini olish</a>` : `<span style="color:#94a3b8">Namuna havolasi hali ulanmagan. Qadamlar Yo‘riqnoma bo‘limida.</span>`;
     pane.insertAdjacentHTML("afterbegin", `<div class="gdrive" id="gDrive">
       <b>Google Drive jurnali</b>
       <p style="margin:6px 0;color:#94a3b8;font-size:13px">${state.account ? esc(state.account.email) : "Google bilan kirilmagan."} ${MOCK ? "· sinov rejimi (haqiqiy Drive emas)" : ""}</p>
@@ -432,6 +432,17 @@
         <div class="grow"><button type="button" id="gMint">${MOCK ? "Sinov kodini olish" : "Kodni olish"}</button></div><p id="gDriveMsg"></p>` :
           `<p>Kod olish uchun avval Google bilan kiring va «Men o‘qituvchiman» ni tanlang.</p><div class="grow"><button type="button" id="gOpenAuth">Google oynasini ochish</button></div>`)}
     </div>`);
+    const card = document.getElementById("gDrive");
+    if (card && !document.getElementById("gToGuide")) {
+      const bar = document.createElement("div");
+      bar.className = "grow";
+      bar.innerHTML = `<button type="button" class="sec" id="gToGuide">Yo‘riqnoma</button>`;
+      card.appendChild(bar);
+      document.getElementById("gToGuide").onclick = () => {
+        window.TEACH.Teacher.tab = "guide";
+        window.TEACH.Teacher.render();
+      };
+    }
     const open = document.getElementById("gOpenAuth");
     if (open) open.onclick = () => { state.mode = null; save(state); paint(); };
     const mint = document.getElementById("gMint");
