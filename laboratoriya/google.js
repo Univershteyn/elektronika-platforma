@@ -68,12 +68,13 @@
 
   const net = {
     async lookup(code) {
-      if (!CFG.registryUrl) throw new Error("Reestr manzili google-config.js da yo‘q");
+      if (!CFG.registryUrl) throw new Error("Sinf kodi hali ulanmagan. Sayt egasi reestrni qo‘yadi. Hozircha mehmon sifatida davom eting — natija jurnalga yozilmaydi.");
       const r = await jsonp(CFG.registryUrl, { action: "lookup", code: code });
       if (!r || !r.ok) throw new Error("Kod topilmadi");
       return r;
     },
     async register(code, url, token) {
+      if (!CFG.registryUrl) throw new Error("Sinf kodi hali ulanmagan. Sayt egasi reestrni qo‘yadi. Laboratoriya va lokal jurnal ishlaydi.");
       await postPlain(CFG.registryUrl, { action: "register", code: code, url: url, idToken: token });
       const r = await jsonp(CFG.registryUrl, { action: "lookup", code: code });
       if (!r || !r.ok) throw new Error("Kod reestrga yozilmadi");
@@ -288,15 +289,22 @@
       document.getElementById("gMockS").onclick = () => signInMock({ sub: "student-sub-1", email: "talaba.sinov@gmail.com", name: "Madina Aliyeva" });
     }
     if (!CFG.clientId) {
-      if (!MOCK && msg) msg.textContent = "Google hali sozlanmagan. Ega laboratoriya/google-config.js ga OAuth client ID yozadi. Mehmon rejimida jurnalga yozilmaydi.";
+      if (!MOCK && msg) msg.textContent = "Google hali sozlanmagan. Mehmon sifatida davom eting — natija jurnalga yozilmaydi.";
       return;
+    }
+    if (!MOCK && msg && (!CFG.registryUrl || !CFG.templateUrl)) {
+      msg.textContent = "Google bilan kirish tayyor. O‘qituvchi jurnali (namuna jadval va sinf kodi) hali ulanmagan. Mehmon sifatida davom etsangiz, natija jurnalga yozilmaydi.";
     }
     const holder = document.createElement("div");
     holder.id = "gBtn";
     slot.appendChild(holder);
     loadGis().then(() => {
-      google.accounts.id.initialize({ client_id: CFG.clientId, callback: onCredential });
-      google.accounts.id.renderButton(holder, { theme: "filled_blue", size: "large", text: "signin_with", shape: "rectangular", width: 320 });
+      try {
+        google.accounts.id.initialize({ client_id: CFG.clientId, callback: onCredential });
+        google.accounts.id.renderButton(holder, { theme: "filled_blue", size: "large", text: "signin_with", shape: "rectangular", width: 320 });
+      } catch (e) {
+        if (msg) msg.textContent = "Google tugmasi ochilmadi. Mehmon sifatida kirishingiz mumkin — natija jurnalga yozilmaydi.";
+      }
     }).catch(() => { if (msg) msg.textContent = "Google tugmasi yuklanmadi. Internetni tekshiring yoki mehmon sifatida kiring."; });
   }
   function loadGis() {
@@ -357,6 +365,7 @@
 
   async function createCode(url) {
     if (!state.account || state.mode !== "teacher") throw new Error("Avval o‘qituvchi sifatida Google bilan kiring");
+    if (!MOCK && !CFG.registryUrl) throw new Error("Sinf kodi hali ulanmagan. Sayt egasi reestrni qo‘yadi. Laboratoriya va lokal jurnal ishlaydi.");
     const code = makeCode();
     const endpoint = MOCK ? ("mock://" + code) : String(url || "").trim();
     if (!MOCK && !validExec(endpoint)) throw new Error("Manzil https://script.google.com/macros/s/…/exec bo‘lishi kerak");
@@ -422,10 +431,11 @@
     const pane = document.getElementById("tPane");
     if (!pane || document.getElementById("gDrive")) return;
     const linked = state.teacher && state.teacher.code;
-    const tpl = CFG.templateUrl ? `<a class="sec" style="display:inline-block;padding:7px 14px;border-radius:6px;text-decoration:none" target="_blank" rel="noopener" href="${esc(CFG.templateUrl)}">Jadval nusxasini olish</a>` : `<span style="color:#94a3b8">Namuna havolasi hali ulanmagan. Qadamlar Yo‘riqnoma bo‘limida.</span>`;
+    const tpl = CFG.templateUrl ? `<a class="sec" style="display:inline-block;padding:7px 14px;border-radius:6px;text-decoration:none" target="_blank" rel="noopener" href="${esc(CFG.templateUrl)}">Jadval nusxasini olish</a>` : `<span>Namuna jadval hali ulanmagan. Sayt egasi havolani qo‘ygach, shu yerda «Jadval nusxasini olish» chiqadi. Hozircha lokal jurnal ishlaydi.</span>`;
     pane.insertAdjacentHTML("afterbegin", `<div class="gdrive" id="gDrive">
       <b>Google Drive jurnali</b>
       <p style="margin:6px 0;color:#94a3b8;font-size:13px">${state.account ? esc(state.account.email) : "Google bilan kirilmagan."} ${MOCK ? "· sinov rejimi (haqiqiy Drive emas)" : ""}</p>
+      ${!MOCK && !CFG.registryUrl ? `<p>Sinf kodi hali ulanmagan. Sayt egasi reestrni qo‘yadi. Laboratoriya va lokal jurnal ishlaydi.</p>` : ""}
       ${linked ? `<div class="gbig" id="gCodeBig">${esc(state.teacher.code)}</div><p>Shu kodni talabalarga bering. Natijalar sizning jadvalingizga tushadi.</p><div class="grow"><button type="button" id="gCopy">Kodni nusxalash</button><button type="button" class="sec" id="gPull">Google Drive dan yangilash</button><button type="button" class="sec" id="gNew">Yangi kod</button></div><p id="gDriveMsg"></p>` :
         (state.mode === "teacher" && state.account ? `<ol style="margin:8px 0 8px 18px;color:#cbd5e1;font-size:13.5px"><li>${tpl}</li><li>Nusxada: Kengaytmalar → Apps Script → Deploy → Web app. Execute as Me, Who has access: Anyone.</li><li>…/exec manzilini quyiga qo‘ying.</li></ol>
         ${MOCK ? "" : `<input id="gExec" placeholder="https://script.google.com/macros/s/…/exec">`}
