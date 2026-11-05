@@ -78,13 +78,13 @@ Jadvalga yozish ruxsati boshqa oyna: o‘qituvchi o‘z Apps Script ini joylagan
 
 ```javascript
 window.ELAB_GOOGLE = {
-  clientId: "SHU_YERGA_CLIENT_ID",
-  registryUrl: "",
-  templateUrl: ""
+  clientId: "948557132699-fk85kr5ul3enbissb8tk0o4pevdg3b8o.apps.googleusercontent.com",
+  registryUrl: "https://script.google.com/macros/s/AKfycbz3oz5VEBtDu0xLgcplJ9vKeYh2qpzGzCn3yP8z8t_3AZmJKQElRNyS4gJLUrWDISY6/exec",
+  templateUrl: "https://docs.google.com/spreadsheets/d/17bOfLzbscuHJI3PJGnzbySlnToR6R7gfF2LDbEgXuac/copy"
 };
 ```
 
-`clientId` ni qo‘ying va saytni yangilang (git push). Kalit, client secret yoki Drive tokenini yozmang.
+Bu uch qiymat hozir saytda yozilgan. Kalit, client secret yoki Drive tokenini yozmang.
 
 Saytni ochib, laboratoriya parolidan keyin **Sign in with Google** chiqishini tekshiring. Chiqmasa, origins qatorini va loyiha holati **In production** ekanini qayta o‘qing.
 
@@ -112,8 +112,11 @@ Reestrda talaba bahosi yo‘q. Unda faqat 6 belgili kod va o‘qituvchining `/ex
 5. Umumiy kirish: **Havolaga ega har kim** / **Anyone with the link**.
 6. Rol: **Ko‘ruvchi** / **Viewer**. Muharrir qilmang — talaba namunaning o‘zini tahrirlamasin.
 7. **Tayyor** / **Done**.
-8. Brauzer manzilidagi `/edit?...` qismini `/copy` qiling. Masalan: `https://docs.google.com/spreadsheets/d/JADVAL_ID/copy`
-9. Shu havolani `templateUrl` ga yozing.
+8. Brauzer manzilidagi `/edit?...` qismini `/copy` qiling. Hozirgi namuna:
+
+   `https://docs.google.com/spreadsheets/d/17bOfLzbscuHJI3PJGnzbySlnToR6R7gfF2LDbEgXuac/copy`
+
+9. Shu havola `templateUrl` da turadi. O‘qituvchi panelidagi **Jadval nusxasini olish** shu manzilni ochadi.
 
 Shu bilan eganing ishi tugaydi. Bir o‘qituvchi hisobi bilan pastdagi qadamlarni o‘zingiz bir marta yurib ko‘rsangiz, namuna skriptni olib o‘tganini bilasiz.
 
@@ -148,7 +151,10 @@ Shu matn panelda **Yo‘riqnoma** bo‘limida ham turadi. Drive ulanmasdan ochil
 
 ### 2. Jurnal namunasidan nusxa
 
-1. **Jurnal** kartasida **Jadval nusxasini olish**. Havola yo‘q bo‘lsa, ega `templateUrl` ni qo‘ymagan.
+1. **Jurnal** kartasidagi **Jadval nusxasini olish** shu sahifani ochadi:
+
+   `https://docs.google.com/spreadsheets/d/17bOfLzbscuHJI3PJGnzbySlnToR6R7gfF2LDbEgXuac/copy`
+
 2. Google sahifasidagi tugma: **Nusxa olish** yoki **Make a copy**. Ba’zi hisobda **Nusxa yaratish**.
 3. Jadvalning o‘zi ochiq bo‘lsa: **Fayl → Nusxa olish** / **File → Make a copy**.
 4. Nom bering, masalan «Elektronika jurnali — 2-kurs». Nusxa sizning Drive ingizda.

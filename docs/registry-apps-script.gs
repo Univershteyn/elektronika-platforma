@@ -7,7 +7,7 @@
  * CONFIG.CLIENT_ID ni google-config.js dagi clientId bilan bir xil qiling.
  */
 var CONFIG = {
-  CLIENT_ID: "PASTE_OAUTH_CLIENT_ID"
+  CLIENT_ID: "948557132699-fk85kr5ul3enbissb8tk0o4pevdg3b8o.apps.googleusercontent.com"
 };
 
 function doGet(e) {

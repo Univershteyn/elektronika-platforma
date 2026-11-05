@@ -725,6 +725,7 @@
     },
     paneGuide() {
       const note = lang() === "uz" ? "" : tr("guide_lang");
+      const copyUrl = (window.ELAB_GOOGLE && window.ELAB_GOOGLE.templateUrl) || "https://docs.google.com/spreadsheets/d/17bOfLzbscuHJI3PJGnzbySlnToR6R7gfF2LDbEgXuac/copy";
       document.getElementById("tPane").innerHTML = (note ? `<p class="tmsg info">${esc(note)}</p>` : "") + `<div class="yguide">
         <p>Bu bo‘lim Google Drive ulanmasdan ham ochiladi. Qadamlarni bir marta bajaring. Talabaga faqat 6 belgili kod beriladi, uzun manzil emas.</p>
         <p>Har bir tugmaning o‘zbekcha va inglizcha nomi yonma-yon yozilgan. Hisob tili qaysi bo‘lsa, o‘sha nom chiqadi. Cloud Console o‘zbekcha emas — uni faqat sayt egasi ochadi.</p>
@@ -755,8 +756,8 @@
         <h3 id="y2">2. Jurnal namunasidan nusxa olish</h3>
         <p>Jurnal sizning Google Drive ingizda turadi. Sayt egasining jadvaliga yozilmaydi.</p>
         <ol>
-          <li><span class="ybtn">Jurnal</span> bo‘limidagi kartada <span class="ybtn">Jadval nusxasini olish</span> ni bosing. Havola yo‘q bo‘lsa, egasi namuna manzilini hali qo‘ymagan — unga ayting.</li>
-          <li>Google nusxa sahifasini ochadi. Tugma: <span class="ybtn">Nusxa olish</span> yoki <span class="ybtn">Make a copy</span>. Ba’zi hisoblarda <span class="ybtn">Nusxa yaratish</span>.</li>
+          <li><span class="ybtn">Jurnal</span> kartasidagi <span class="ybtn">Jadval nusxasini olish</span> shu sahifani ochadi: <a href="${esc(copyUrl)}" target="_blank" rel="noopener">${esc(copyUrl)}</a></li>
+          <li>Google nusxa sahifasida tugma: <span class="ybtn">Nusxa olish</span> yoki <span class="ybtn">Make a copy</span>. Ba’zi hisoblarda <span class="ybtn">Nusxa yaratish</span>. Bu namunaning o‘zi emas, sizning Drive ingizdagi nusxa.</li>
           <li>Jadvalning o‘zi ochiq bo‘lsa, menyu: <span class="ybtn">Fayl → Nusxa olish</span> (inglizcha: <span class="ybtn">File → Make a copy</span>).</li>
           <li>Nusxaga tushunarli nom bering, masalan «Elektronika jurnali — 2-kurs». U sizning Drive ingizda saqlanadi.</li>
           <li>Namunaning o‘zida <span class="ybtn">Joylashtirish</span> / <span class="ybtn">Deploy</span> ni bosmang. Joylashtirish faqat sizning nusxangizda.</li>
