@@ -83,12 +83,79 @@ input,textarea,select,[contenteditable="true"]{-webkit-user-select:text!importan
 @media (max-width:1300px){#card{flex-direction:column;align-items:stretch;gap:6px}#cF{border-left:0;border-top:2px dashed var(--line);padding:4px 0 0}}
 @media (max-height:820px){.ctl{font-size:16px}input[type=range]{height:38px}#readout{font-size:16px}#readout td{padding:1px 6px}#btns .btn{height:48px;font-size:18px}}
 @media (max-height:700px){#card{max-height:26%}}
+
+#bSheet{display:none}
+#visTab,#visBack{display:none}
+
+@media (max-width:1400px) and (min-width:1101px){
+  .navword{display:none}
+  .btn{min-width:48px;padding:0 10px}
+  .ttl{min-width:0}
+}
+@media (max-width:1100px){
+  .bar{flex-wrap:wrap;min-height:56px;gap:6px}
+  .btn{min-width:44px;height:48px;font-size:20px;padding:0 10px}
+  #left .ttl{flex:1 1 100%;order:-1;font-size:18px;min-width:0}
+  #right .ttl{flex:1 1 auto;order:0;font-size:18px;min-width:0}
+  #lec{padding:14px 18px 96px;font-size:clamp(18px,calc(var(--fs) * .88),var(--fs))}
+  #lec p{text-align:left}
+  #lec table{table-layout:fixed}
+  #lec td,#lec th{overflow-wrap:anywhere}
+  #nav{font-size:20px}
+  #nav .sec{font-size:18px;padding-left:28px}
+  #welcome{padding:18px 16px;font-size:18px}
+  #welcome h1{font-size:26px}
+  #welcome .hero{flex-wrap:wrap;gap:14px}
+  #welcome img{width:96px}
+  #cDef,#cF{font-size:18px}
+  #penBar{max-width:calc(100vw - 16px);flex-wrap:wrap;justify-content:center}
+  #left{padding-bottom:96px;box-sizing:border-box}
+  #mualliflik-huquqi{left:0!important;right:0!important;bottom:0!important;border-radius:0!important;text-align:center;max-width:none;white-space:normal;z-index:30!important}
+  #bosh-sahifa-link{bottom:42px!important;z-index:31!important}
+}
+@media (max-width:720px){
+  #app{grid-template-columns:1fr;grid-template-rows:1fr}
+  #left{height:100vh;height:100dvh}
+  #right{display:none}
+  .navword{display:none}
+  .bar{flex-wrap:wrap;padding:6px;gap:6px;min-height:48px}
+  .ttl{flex:1 1 100%;font-size:16px;order:-1}
+  .btn{width:44px;min-width:44px;height:44px;padding:0;font-size:18px}
+  #bNav{width:auto;padding:0 10px}
+  #lec{padding:12px 14px 108px;font-size:clamp(17px,calc(var(--fs) * .72),var(--fs))}
+  #lec p{text-align:left}
+  #nav{top:96px;font-size:18px;padding:12px;z-index:40}
+  body:has(#nav:not(.hidden)) #bosh-sahifa-link,body:has(#nav:not(.hidden)) #mualliflik-huquqi{visibility:hidden}
+  #nav .lec{padding:10px}
+  #nav .sec{font-size:16px;padding:10px 12px}
+  #nav .lec .no{min-width:48px}
+  #visTab{display:flex;align-items:center;justify-content:center;position:fixed;right:10px;bottom:58px;z-index:35;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:#17325c;color:#fff;font:600 16px/1 system-ui,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+  body.vis-open #visTab{display:none}
+  body.vis-open #visBack{display:block;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:40}
+  body.vis-open #right{display:flex;position:fixed;left:0;right:0;bottom:0;height:min(74vh,680px);z-index:41;border-radius:16px 16px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.35);background:var(--bg)}
+  body.vis-open #bSheet{display:inline-flex}
+  body.vis-open #right #vis{min-height:0}
+  body.vis-open #cvWrap{height:min(220px,32vh)}
+  body.vis-open #card{max-height:42%}
+  #welcome{padding:14px;font-size:17px}
+  #welcome .hero{flex-direction:column;align-items:flex-start;gap:10px}
+  #welcome img{width:72px}
+  #welcome h1{font-size:22px}
+  .chip{font-size:16px;padding:10px 14px}
+  #penBar{left:8px;right:8px;transform:none;bottom:8px;padding:8px;gap:8px}
+  #penBar .sw{width:44px;height:44px}
+  #penBar .btn{width:auto;min-width:44px;height:44px;font-size:15px;padding:0 10px}
+  #toast{font-size:16px;max-width:calc(100vw - 24px);text-align:center}
+  #bosh-sahifa-link{left:8px!important;bottom:8px!important}
+  #mualliflik-huquqi{left:8px!important;right:8px!important;bottom:52px!important;max-width:none;white-space:normal}
+  body.vis-open #bosh-sahifa-link,body.vis-open #mualliflik-huquqi{display:none!important}
+}
 </style>
 </head><body>
 <div id="app">
  <section id="left">
   <header class="bar">
-   <button id="bNav" class="btn big" title="Mavzular">☰ Mavzular</button>
+   <button id="bNav" class="btn big" title="Mavzular">☰ <span class="navword">Mavzular</span></button>
    <div id="lecTitle" class="ttl"></div>
    <button id="bPrevS" class="btn" title="Oldingi bo'lim">▲</button>
    <button id="bNextS" class="btn" title="Keyingi bo'lim">▼</button>
@@ -106,6 +173,7 @@ input,textarea,select,[contenteditable="true"]{-webkit-user-select:text!importan
    <button id="bFwd" class="btn" title="Oldinga">▶</button>
    <div id="termTitle" class="ttl">Vizual panel</div>
    <button id="bLab" class="btn lab hidden" title="Virtual laboratoriya">🔬 Lab</button>
+   <button id="bSheet" class="btn" title="Yopish">✕</button>
    <button id="bHome" class="btn" title="Bosh sahifa">🏠</button>
   </header>
   <div id="vis">
@@ -122,6 +190,8 @@ input,textarea,select,[contenteditable="true"]{-webkit-user-select:text!importan
   </div>
  </section>
 </div>
+<button type="button" id="visTab" title="Ko‘rish">Ko‘rish</button>
+<div id="visBack"></div>
 <canvas id="ink"></canvas>
 <div id="penBar" class="hidden"></div>
 <div id="toast"></div>
@@ -1111,14 +1181,14 @@ function buildNav(){const nv=$("nav");let h="";COURSE.forEach(m=>{h+='<div class
 function secStep(d){const el=$("lec"),hs=[...el.querySelectorAll("h1,h2")],top=el.scrollTop+10;let i=hs.findIndex(h=>h.offsetTop>top+5);if(i<0)i=hs.length;let k=d>0?i:i-2;k=Math.max(0,Math.min(hs.length-1,k));el.scrollTop=hs[k].offsetTop-10}
 function setFs(v){st.fs=Math.max(18,Math.min(44,v));document.documentElement.style.setProperty("--fs",st.fs+"px");localStorage.setItem("doska_fs",st.fs)}
 /* ---------- o'ng panel: atama kartasi ---------- */
-function openTerm(id,push=true){const t=TERMS[id];if(!t)return;st.term=id;
+function openTerm(id,push=true){const t=TERMS[id];if(!t)return;st.term=id;document.body.classList.add("vis-open");
  if(push){st.hist=st.hist.slice(0,st.hi+1);if(st.hist[st.hi]!==id){st.hist.push(id);st.hi=st.hist.length-1}}
  $("termTitle").textContent=t.t;$("cDef").innerHTML="<b style='color:#17325c;font-size:24px'>"+t.t+"</b><br>"+t.d;$("cF").innerHTML=(TF[id]||[]).join("")||"<i style='color:#8c96a5'>formula yo'q</i>";texify($("cF"));$("cF").classList.toggle("hidden",!(TF[id]||[]).length);
  $("card").classList.remove("hidden");$("welcome").classList.add("hidden");$("bLab").classList.toggle("hidden",!t.lab);if(t.lab)$("bLab").textContent="🔬 L"+t.lab;
  openSim(t.sim,t.p||{});histBtns();markActive()}
 function markActive(){document.querySelectorAll(".term.act").forEach(e=>e.classList.remove("act"));if(st.term)document.querySelectorAll('.term[data-t="'+st.term+'"]').forEach(e=>e.classList.add("act"))}
 function histBtns(){$("bBack").disabled=st.hi<=0;$("bFwd").disabled=st.hi>=st.hist.length-1}
-function home(){st.term=null;if(st.sim)st.sim.stop();st.sim=null;$("card").classList.add("hidden");$("simBox").classList.add("hidden");$("welcome").classList.remove("hidden");$("bLab").classList.add("hidden");$("termTitle").textContent="Vizual panel";markActive()}
+function home(){st.term=null;if(st.sim)st.sim.stop();st.sim=null;document.body.classList.remove("vis-open");$("card").classList.add("hidden");$("simBox").classList.add("hidden");$("welcome").classList.remove("hidden");$("bLab").classList.add("hidden");$("termTitle").textContent="Vizual panel";markActive()}
 function welcome(){const ids=Object.keys(TERMS).filter(k=>(TERMS[k].ch||[]).includes(st.ch));
  $("welcome").innerHTML='<div class="hero"><img src="'+EMBLEM+'" alt="TerDPI"><div><h1>Elektronika va signallarni qayta ishlash</h1><div>Interaktiv doska — ma\'ruza + simulyatsiya</div><div style="margin-top:10px"><b>Muallif:</b> '+AUTHOR+"<br>"+ORG+", "+YEAR+"</div></div></div>"+
  '<p style="margin-top:22px">Chap paneldagi <span class="term">ajratilgan atama</span>ga bosing — bu yerda uning ta\'rifi, formulasi va interaktiv modeli ochiladi. ✏️ qalam bilan ikkala panelda ham yozish mumkin.</p><h3>Barcha simulyatsiyalar</h3><div class="chips">'+
@@ -1194,6 +1264,9 @@ function togglePen(v){pen.on=v==null?!pen.on:v;$("ink").classList.toggle("on",pe
 /* ---------- ishga tushirish ---------- */
 function init(){setFs(st.fs);{const hm=/m=(\d+)/.exec(location.hash),hn=hm?+hm[1]:0;if(hn>=1&&hn<=12)showLecture(hn);else{showLecture(1);welcome();}window.addEventListener("hashchange",()=>{const m=/m=(\d+)/.exec(location.hash);if(m&&+m[1]>=1&&+m[1]<=12)showLecture(+m[1]);});}penInit();ZM.init();histBtns();
  $("bNav").onclick=()=>{$("nav").classList.toggle("hidden");buildNav()};
+ $("bSheet").onclick=()=>document.body.classList.remove("vis-open");
+ $("visBack").onclick=()=>document.body.classList.remove("vis-open");
+ $("visTab").onclick=()=>document.body.classList.add("vis-open");
  $("nav").onclick=e=>{const l=e.target.closest(".lec"),s=e.target.closest(".sec");if(s){showLecture(st.ch,s.dataset.s);$("nav").classList.add("hidden")}else if(l){showLecture(+l.dataset.l);if(!LEC[+l.dataset.l])toast("Bu ma'ruza tez orada qo'shiladi");$("nav").classList.add("hidden")}};
  $("lec").onclick=e=>{const t=e.target.closest(".term");if(t)openTerm(t.dataset.t)};
  $("welcome").onclick=e=>{const t=e.target.closest(".chip");if(t)openTerm(t.dataset.t)};
