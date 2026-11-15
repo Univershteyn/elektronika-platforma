@@ -81,6 +81,10 @@ table.tt th{color:#94a3b8;font-weight:600;font-size:11.5px;background:#0f172a;po
 .baho-ok{color:#86efac}.baho-no{color:#fca5a5}
 .bar-row{display:grid;grid-template-columns:minmax(90px,1.3fr) 1fr auto;gap:8px;align-items:center;margin:4px 0;font-size:12.5px}
 .bar{height:8px;background:#0f172a;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:#60a5fa}
+.cert-res{border:1px solid #334155;border-radius:12px;padding:12px;margin:10px 0;background:#0f172a}
+.cert-res .st{font-size:18px;font-weight:800;margin:0 0 8px;line-height:1.3}
+.cert-kv{display:grid;grid-template-columns:minmax(108px,170px) 1fr;gap:5px 10px;font-size:14.5px;line-height:1.4;margin-top:8px}
+.cert-kv b{color:#94a3b8;font-weight:600}
 .calc-hint{font-size:12.5px;line-height:1.4;color:#fbbf24;margin-top:4px}
 .hint-ask{margin-top:4px;background:#334155;font-size:12px;padding:4px 8px}
 #aiFab{position:fixed;right:14px;bottom:14px;z-index:8;display:inline-flex;gap:8px;align-items:center;height:40px;padding:0 14px;border-radius:999px;background:#7c3aed;color:#fff;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.35)}
@@ -104,6 +108,7 @@ table.tt th{color:#94a3b8;font-weight:600;font-size:11.5px;background:#0f172a;po
   table.tt{font-size:12px}
   .yguide{font-size:16px;max-width:none}
   .yguide h3{font-size:18px}
+  .cert-kv{grid-template-columns:minmax(96px,38%) 1fr}
 }
 </style>
 </head><body>
@@ -2502,15 +2507,20 @@ function certHTML(sc,ld,remote){const c=CL[S.lang]||CL.uz,b=baho(lab(),ld);
  const ov=raw>=2&&raw<=5?raw:null;const mark=ov||b.mark,row=MEZON.find(x=>x.n===mark)||MEZON[3],pct=(b.pct==null?sc.score:b.pct);const gt=mark+" — "+row.w+" · "+pct+"%";
  if(!ld.t1||!(ld.post&&ld.post.done))return`<div class="card"><small>${c.need}</small></div>`;
  if(mark===2)return`<div class="card"><b>${c.grade}: <span class=bad>${gt}</span></b><br><small class=bad>${ov===2?c.ov:c.no}</small></div>`;
- return`<div class="card"><b>${c.grade}: <span class=okc>${gt}</span></b><br><br><button id="cert" class="ok">🎓 ${c.btn}</button></div>`}
+ return`<div class="card"><b>${c.grade}: <span class=okc>${gt}</span></b><br><br><button id="cert" class="ok">🎓 ${c.btn}</button>${certFoot()}</div>`}
+function certFoot(){try{const k=window.ELAB_CERT&&ELAB_CERT.kind&&ELAB_CERT.kind();if(!k)return "";return k.k==="R"?"<br><small>Sertifikat raqami o‘qituvchi jurnaliga yoziladi.</small>":"<br><small class=bad>Mehmon rejimida olingan sertifikat jurnalga yozilmaydi va tasdiqlanmagan hisoblanadi.</small>"}catch(e){return ""}}
 /* certificate number & verification code: deterministic hash of student + lab + score + completion time */
 function certIds(L,ld,sc){const s=S.student,base=[s.name.trim().toLowerCase(),s.group.trim(),s.id.trim(),L.id,sc.score,ld.t1].join("|");
  const h1=fnv(base),h2=fnv("v|"+base+"|"+h1),h3=fnv("w|"+h2);const hx=x=>x.toString(16).toUpperCase().padStart(8,"0");
  const B32="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let v="";for(let i=0;i<10;i++){v+=B32[(i<5?h2>>>(i*6):h3>>>((i-5)*6))&31]}
  return{no:`TerDPI-EL-2026-${String(L.id).padStart(2,"0")}-${hx(h1)}`,code:v.slice(0,5)+"-"+v.slice(5)}}
-const Cert={pdf(L,ld,sc,eff){const b0=baho(L,ld);const mark=eff&&eff.mark?eff.mark:b0.mark;if(mark<=2){alert((eff&&eff.override===2?(CL[S.lang]||CL.uz).ov:(CL[S.lang]||CL.uz).no));return}const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});let F="helvetica";
+const Cert={pdf(L,ld,sc,eff){const b0=baho(L,ld);const mark=eff&&eff.mark?eff.mark:b0.mark;if(mark<=2){alert((eff&&eff.override===2?(CL[S.lang]||CL.uz).ov:(CL[S.lang]||CL.uz).no));return}let issued=null,ids=certIds(L,ld,sc);
+ try{if(window.ELAB_CERT){issued=ELAB_CERT.issue(L,ld,sc,mark);ids={no:issued.no,code:issued.code,k:issued.k}}}catch(e){console.warn(e);issued=null;ids=certIds(L,ld,sc)}
+ try{if(issued)save()}catch(e){console.warn(e)}
+ if(issued&&window.ELAB_AUTH&&ELAB_AUTH.pushNow)ELAB_AUTH.pushNow().catch(()=>{});
+ const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});let F="helvetica";
  try{d.addFileToVFS("dv.ttf",FONT_R);d.addFont("dv.ttf","DV","normal");d.addFileToVFS("dvb.ttf",FONT_B);d.addFont("dvb.ttf","DV","bold");F="DV"}catch(e){console.warn(e)}
- const W=297,H=210,cx=W/2,a=AUTHOR.uz,st=S.student,b=MEZON.find(x=>x.n===mark)||MEZON[3],ids=certIds(L,ld,sc),dt=new Date(ld.t1||Date.now());
+ const W=297,H=210,cx=W/2,a=AUTHOR.uz,st=S.student,b=MEZON.find(x=>x.n===mark)||MEZON[3],dt=new Date(ld.t1||Date.now());
  const date=`${String(dt.getDate()).padStart(2,"0")}.${String(dt.getMonth()+1).padStart(2,"0")}.${dt.getFullYear()}`;
  const T=(x,y,s,sz,b,col=[20,30,70],al="center")=>{d.setFont(F,b?"bold":"normal");d.setFontSize(sz);d.setTextColor(...col);d.text(String(s),x,y,{align:al})};
  // background + decorative border
@@ -2522,11 +2532,14 @@ const Cert={pdf(L,ld,sc,eff){const b0=baho(L,ld);const mark=eff&&eff.mark?eff.ma
  try{d.addImage(ASSETS.emblem,"PNG",cx-14,19,28,26.6)}catch(e){console.warn(e)}
  T(cx,52,a.inst.toUpperCase(),11,1,[20,48,140]);T(cx,57.5,"Fizika kafedrasi · Elektronika va signallarni qayta ishlash — 3D virtual laboratoriya",8.5,0,[90,90,110]);
  T(cx,74,"SERTIFIKAT",34,1,[160,120,30]);d.setDrawColor(196,160,60);d.setLineWidth(0.5);d.line(cx-45,78,cx+45,78);
- T(cx,87,"Ushbu sertifikat",11,0,[60,60,80]);T(cx,99,st.name,22,1,[20,30,70]);
- T(cx,107,`Guruh: ${st.group}     ·     Talaba ID: ${st.id}`,11,0,[60,60,80]);
- T(cx,116,"quyidagi virtual laboratoriya ishini muvaffaqiyatli bajarganligini tasdiqlaydi:",11,0,[60,60,80]);
- const tl=d.splitTextToSize(`${L.id}-laboratoriya ishi: «${L.title.uz}»`,220);tl.forEach((l,i)=>T(cx,125+i*7,l,15,1,[20,48,140]));
- const yb=127+tl.length*7;
+ const dy=issued?6:0;
+ if(issued)T(cx,84.5,issued.k==="M"?"MEHMON REJIMIDA OLINGAN — TASDIQLANMAGAN":"Ro‘yxatdan o‘tgan talaba hisobi",10,1,issued.k==="M"?[153,27,27]:[22,101,52]);
+ T(cx,87+dy,"Ushbu sertifikat",11,0,[60,60,80]);T(cx,99+dy,st.name,22,1,[20,30,70]);
+ T(cx,107+dy,`Guruh: ${st.group}     ·     Talaba ID: ${st.id}`,11,0,[60,60,80]);
+ T(cx,116+dy,"quyidagi virtual laboratoriya ishini muvaffaqiyatli bajarganligini tasdiqlaydi:",11,0,[60,60,80]);
+ const tl=d.splitTextToSize(`${L.id}-laboratoriya ishi: «${L.title.uz}»`,issued?200:220);tl.forEach((l,i)=>T(cx,125+dy+i*7,l,15,1,[20,48,140]));
+ const yb=127+dy+tl.length*7;
+ try{if(issued&&ELAB_CERT.qrDataUrl){const img=ELAB_CERT.qrDataUrl(ELAB_CERT.verifyUrl(issued));if(img)d.addImage(img,"PNG",16,16,34,34)}}catch(e){console.warn(e)}
  T(cx,yb+3,`Ball: ${sc.score}% (${sc.score} / 100)     ·     Baho: ${mark} — ${b.w}     ·     Yakunlangan sana: ${date}`,12,1,[30,30,50]);
  // signature block
  const ys=178;d.setDrawColor(40,40,60);d.setLineWidth(0.3);d.line(30,ys,110,ys);
@@ -2903,4 +2916,4 @@ hashLab();
 initBench();render();
 window.APP={S,LABS,Plus,go,render,C,B,auditBoard,ANCH,hole,focusBoard,get V(){return V}};
 window.ELAB={get S(){return S},LABS,lab,LD,Plus,grade,GRADES,MEZON,baho,$,t,I18N,C,makeVariant,fmt,mx,fmtR,AUTHOR,AU,sha,go,get V(){return V},set V(v){V=v},get render(){return render},set render(f){render=f},get stepCalc(){return stepCalc},set stepCalc(f){stepCalc=f},get bindReg(){return bindReg},set bindReg(f){bindReg=f},get stepReport(){return stepReport},set stepReport(f){stepReport=f},FONT_R,FONT_B};
-</script><script src="google-config.js"></script><script src="teach.js"></script><script src="google.js"></script><a href="../" id="bosh-sahifa-link" title="Bosh sahifa" style="position:fixed;left:10px;bottom:10px;z-index:2147483000;background:rgba(15,23,42,.85);color:#fff;font:600 14px/1 system-ui,sans-serif;padding:10px 14px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.35)">&#8962; Bosh sahifa</a><span id="mualliflik-huquqi" style="position:fixed;left:150px;bottom:16px;z-index:2147483000;background:rgba(15,23,42,.75);color:#e2e8f0;font:12px/1.2 system-ui,sans-serif;padding:5px 10px;border-radius:999px;pointer-events:none">© 2026 Oromiddinov S.B. · DGU 68679</span></body></html>
+</script><script src="google-config.js"></script><script src="teach.js"></script><script src="cert.js"></script><script src="google.js"></script><a href="../" id="bosh-sahifa-link" title="Bosh sahifa" style="position:fixed;left:10px;bottom:10px;z-index:2147483000;background:rgba(15,23,42,.85);color:#fff;font:600 14px/1 system-ui,sans-serif;padding:10px 14px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.35)">&#8962; Bosh sahifa</a><span id="mualliflik-huquqi" style="position:fixed;left:150px;bottom:16px;z-index:2147483000;background:rgba(15,23,42,.75);color:#e2e8f0;font:12px/1.2 system-ui,sans-serif;padding:5px 10px;border-radius:999px;pointer-events:none">© 2026 Oromiddinov S.B. · DGU 68679</span></body></html>

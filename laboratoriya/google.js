@@ -871,7 +871,13 @@
       get state() { return state; }, mock: MOCK
     };
     if (state.mode === "teacher" && state.account) ensureTeacher();
-    const start = () => paint();
+    const start = () => {
+      paint();
+      try {
+        const q = sessionStorage.getItem("elab_cert_q");
+        if (q && state.mode === "teacher" && state.account && window.TEACH && window.TEACH.Teacher) window.TEACH.Teacher.open();
+      } catch (e) {}
+    };
     if (document.getElementById("gate")) {
       const obs = new MutationObserver(() => { if (!document.getElementById("gate")) { obs.disconnect(); start(); } });
       obs.observe(document.body, { childList: true, subtree: true });

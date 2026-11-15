@@ -6,6 +6,11 @@
    Standart o‘qituvchi paroli kodda ochiq yozilmaydi — faqat SHA-256("ELAB|"+parol). */
 (function () {
   "use strict";
+  try {
+    const sp = new URLSearchParams(location.search);
+    const cq = sp.get("sertifikat") || sp.get("s");
+    if (cq) sessionStorage.setItem("elab_cert_q", cq);
+  } catch (e) {}
   const EL = window.ELAB;
   if (!EL) { console.warn("ELAB bridge missing"); return; }
 
@@ -17,7 +22,36 @@
   const UI = {
     uz: {
       teachBtn: "O‘qituvchi", teacher_panel: "O‘qituvchi paneli", journal: "O‘qituvchi jurnali",
-      tab_journal: "Jurnal",       tab_guide: "Yo‘riqnoma", tab_list: "Talabalar", tab_an: "Tahlil", tab_lb: "Reyting", tab_set: "Sozlama",
+      tab_journal: "Jurnal", tab_cert: "Sertifikat", tab_guide: "Yo‘riqnoma", tab_list: "Talabalar", tab_an: "Tahlil", tab_lb: "Reyting", tab_set: "Sozlama",
+      cert_need: "Raqamni yozing.",
+      cert_pulling: "Jurnal yangilanmoqda…",
+      cert_info: "Raqamni, tasdiqlash kodini yoki sertifikatdagi havolani (QR) yozing. Ro‘yxatdan o‘tgan talaba sertifikati Google jurnalida, shu hisobga bog‘langan holda saqlanadi. Mehmon sertifikati jurnalga tushmaydi.",
+      cert_label: "Sertifikat raqami yoki havola",
+      cert_ph: "TerDPI-EL-2026-…",
+      cert_go: "Tekshirish",
+      cert_pull: "Jadvaldan yangilash",
+      cert_list: "Jurnalda yozilgan sertifikatlar",
+      cert_empty: "Hali sertifikat yozuvi yo‘q. Talaba sertifikatni yuklab olgach, jadvalni yangilang.",
+      cert_localnote: "Google o‘qituvchi hisobi yo‘q. Ro‘yxat faqat shu brauzerdagi jurnal. Boshqa qurilmadagi talaba sertifikati ko‘rinmaydi.",
+      cert_st_valid: "Ha — jurnalda bor",
+      cert_st_guest: "Mehmon rejimida olingan — tasdiqlanmagan",
+      cert_st_missing: "Topilmadi",
+      cert_st_revoked: "Sertifikat yo‘q: baho 2",
+      cert_st_badcode: "Tasdiqlash kodi mos emas",
+      cert_st_local: "Jurnalda bor, Google hisobi yo‘q",
+      cert_st_broken: "Havola buzilgan",
+      cert_st_empty: "Raqam kerak",
+      cert_note_valid: "Bu sertifikat o‘qituvchi jurnalida shu Google hisobiga yozilgan.",
+      cert_note_valid_old: "Eski sertifikat. Raqam jurnalidagi ism, guruh, ID, ball va vaqt bilan mos keldi. Talaba ro‘yxat formasini boshqacha to‘ldirgan bo‘lsa, eski PDF topilmaydi.",
+      cert_note_guest: "Bu sertifikat mehmon rejimida yaratilgan. U jurnalga yozilmagan va ro‘yxatdan o‘tgan talaba hujjati emas. Ism sertifikatning o‘zidagi yozuv — tekshirilmagan.",
+      cert_note_guest_noname: "Raqam mehmon formatida. Jurnalda yo‘q. Ism va ballni ko‘rish uchun sertifikatdagi QR havolasini qo‘ying. Bu baribir tasdiqlanmagan.",
+      cert_note_missing: "Jurnalda bu raqam yo‘q. Ro‘yxatdan o‘tgan deb tasdiqlab bo‘lmaydi. Eski PDF markazda saqlanmagan; boshqa o‘qituvchi jurnali yoki mehmon sertifikati ham shu yerda chiqmasligi mumkin.",
+      cert_note_missing_reg: "Raqam ro‘yxatdan o‘tgan talaba formatida, lekin bu jurnalda yo‘q. Tasdiqlanmagan.",
+      cert_note_revoked: "Jurnalda yozuv bor, lekin joriy baho 2. Bunday natijada sertifikat berilmaydi.",
+      cert_note_badcode: "Raqam topildi, lekin tasdiqlash kodi sertifikatdagisiga mos emas.",
+      cert_note_local: "Yozuv shu brauzer jurnalida, lekin Google hisobiga bog‘lanmagan. Ro‘yxatdan o‘tgan talaba sertifikati deb tasdiqlanmaydi.",
+      cert_note_broken: "Havola yoki yozuv buzilgan. Raqamni qaytadan yozing.",
+      cert_col_no: "Raqam", cert_col_who: "Talaba", cert_col_acc: "Hisob", cert_col_lab: "Ish", cert_col_score: "Ball", cert_col_date: "Sana",
       tp_pw: "O‘qituvchi paroli", tp_login: "Kirish", tp_badpw: "Parol noto‘g‘ri.",
       tp_about: "Google bilan o‘qituvchi sifatida kirgan bo‘lsangiz, parol so‘ralmaydi. Parol faqat Google siz ulanmagan eski jurnal uchun.",
       tp_std: "Eski standart parol: 123456. Google hisobi bo‘lsa, u ishlatilmaydi.",
@@ -60,7 +94,7 @@
     },
     ru: {
       teachBtn: "Преподаватель", teacher_panel: "Панель преподавателя", journal: "Журнал преподавателя",
-      tab_journal: "Журнал", tab_guide: "Yo‘riqnoma", tab_list: "Студенты", tab_an: "Аналитика", tab_lb: "Рейтинг", tab_set: "Настройки",
+      tab_journal: "Журнал", tab_cert: "Сертификат", tab_guide: "Yo‘riqnoma", tab_list: "Студенты", tab_an: "Аналитика", tab_lb: "Рейтинг", tab_set: "Настройки",
       guide_lang: "Qadamlar o‘zbek tilida — saytdagi tugmalar bilan bir xil.",
       tp_pw: "Пароль преподавателя", tp_login: "Войти", tp_badpw: "Неверный пароль.",
       tp_about: "Если вы вошли как преподаватель через Google, пароль не нужен. Пароль — только для старого журнала без Google.",
@@ -104,7 +138,7 @@
     },
     en: {
       teachBtn: "Teacher", teacher_panel: "Teacher panel", journal: "Teacher journal",
-      tab_journal: "Journal", tab_guide: "Yo‘riqnoma", tab_list: "Students", tab_an: "Analytics", tab_lb: "Ranking", tab_set: "Settings",
+      tab_journal: "Journal", tab_cert: "Certificate", tab_guide: "Yo‘riqnoma", tab_list: "Students", tab_an: "Analytics", tab_lb: "Ranking", tab_set: "Settings",
       guide_lang: "The steps are in Uzbek, matching the buttons on this site.",
       tp_pw: "Teacher password", tp_login: "Sign in", tp_badpw: "Wrong password.",
       tp_about: "A Google teacher sign-in opens this panel without a password. The password is only a fallback when Google is not used.",
@@ -482,7 +516,8 @@
         postN: (L.post || []).length, postOk: ld.post && ld.post.done ? ld.post.n : null,
         series: series, asmErr: ld.asm ? ld.asm.err || 0 : 0, asmDone: !!(ld.asm && ld.asm.done),
         concl: String(ld.concl || "").slice(0, 2000), t0: ld.t0 || null, t1: ld.t1 || null,
-        updated: Date.now(), calc: null, score: null, grade: null, parts: null, done: !!ld.t1
+        updated: Date.now(), calc: null, score: null, grade: null, parts: null, done: !!ld.t1,
+        cert: ld.cert && ld.cert.no ? ld.cert : null
       };
       const hasCalc = ld.calc && Object.keys(ld.calc).length;
       if (hasCalc || ld.t1) {
@@ -628,6 +663,7 @@
         this.google = true;
         this.auth = true;
         if (b) b.innerHTML = `<p class="tmsg info">Jurnal qidirilmoqda…</p>`;
+        this.pickCertTab();
         if (window.ELAB_AUTH.ensureTeacher) await window.ELAB_AUTH.ensureTeacher();
         this.render();
         return;
@@ -656,21 +692,113 @@
         if (gbtn && window.ELAB_AUTH && window.ELAB_AUTH.openGate) gbtn.onclick = () => window.ELAB_AUTH.openGate();
         document.getElementById("tLogin").onsubmit = async e => {
           e.preventDefault();
-          if (await this.check(document.getElementById("tPw").value)) { this.auth = true; this.render(); }
+          if (await this.check(document.getElementById("tPw").value)) { this.auth = true; this.pickCertTab(); this.render(); }
           else document.getElementById("tMsg").innerHTML = `<div class="tmsg err">${esc(tr("tp_badpw"))}</div>`;
         };
         setTimeout(() => { const i = document.getElementById("tPw"); if (i) i.focus(); }, 40);
         return;
       }
-      const tabs = [["journal", "tab_journal"], ["guide", "tab_guide"], ["list", "tab_list"], ["an", "tab_an"], ["lb", "tab_lb"], ["set", "tab_set"]];
+      const tabs = [["journal", "tab_journal"], ["cert", "tab_cert"], ["guide", "tab_guide"], ["list", "tab_list"], ["an", "tab_an"], ["lb", "tab_lb"], ["set", "tab_set"]];
       b.innerHTML = `<div class="ttabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tt="${k}" class="${this.tab === k ? "on" : ""}">${esc(tr(n))}</button>`).join("")}</div><div id="tPane"></div>`;
       b.querySelectorAll("[data-tt]").forEach(x => x.onclick = () => { this.tab = x.dataset.tt; this.sel = null; this.render(); });
       if (this.tab === "journal") this.paneJournal();
+      else if (this.tab === "cert") this.paneCert();
       else if (this.tab === "guide") this.paneGuide();
       else if (this.tab === "list") this.paneList();
       else if (this.tab === "an") this.paneAn();
       else if (this.tab === "lb") this.paneLb();
       else this.paneSet();
+    },
+    pickCertTab() {
+      let q = "";
+      try { q = sessionStorage.getItem("elab_cert_q") || ""; } catch (e) { q = ""; }
+      if (!q || this.certDeep) return;
+      this.certDeep = true;
+      this.tab = "cert";
+      this.certPrefill = q;
+      this.certAutorun = true;
+    },
+    certCard(res) {
+      if (!res || res.status === "empty") return `<p class="tmsg warn">${esc(tr("cert_need"))}</p>`;
+      const tone = { valid: "ok", guest: "warn", missing: "err", revoked: "err", badcode: "err", local: "warn", broken: "err" }[res.status] || "info";
+      const title = tr("cert_st_" + res.status);
+      const note = tr(res.noteKey || ("cert_note_" + res.status));
+      const rows = [];
+      const add = (k, v) => { if (v != null && String(v) !== "") rows.push(`<b>${esc(k)}</b><span>${esc(v)}</span>`); };
+      add("Talaba", res.name);
+      if (res.nameDiffers) add("Jurnaldagi ism", res.journalName);
+      add("Guruh", res.group);
+      add("Talaba ID", res.sid);
+      add("Hisob", res.accountText);
+      add("Elektron pochta", res.email);
+      add("Laboratoriya", res.lab ? (res.lab + ". " + (res.labTitle || "")) : "");
+      add("Ball", res.score != null && res.score !== "" ? (res.score + "%") : "");
+      const mark = res.mark != null && res.mark !== "" ? (res.mark + (res.word ? " — " + res.word : "") + (res.certMark != null && Number(res.certMark) !== Number(res.mark) ? " (sertifikatda " + res.certMark + ")" : "")) : "";
+      add("Baho", mark);
+      add("Sana", res.date);
+      add("Sertifikat raqami", res.no);
+      add("Tasdiqlash kodi", res.code);
+      return `<div class="cert-res"><p class="st">${esc(title)}</p><div class="tmsg ${tone}">${esc(note)}</div>${rows.length ? `<div class="cert-kv">${rows.join("")}</div>` : ""}</div>`;
+    },
+    paneCert() {
+      if (this.google && window.ELAB_AUTH && window.ELAB_AUTH.refreshDrive && !this.certFresh) {
+        this.certFresh = true;
+        const pane = document.getElementById("tPane");
+        if (pane) pane.innerHTML = `<p class="tmsg info">${esc(tr("cert_pulling"))}</p>`;
+        window.ELAB_AUTH.refreshDrive().catch(e => {
+          this.certMsg = (e && e.message) || "Jadval yangilanmadi";
+          if (this.tab === "cert") this.paneCert();
+        });
+        return;
+      }
+      const pane = document.getElementById("tPane");
+      if (!pane) return;
+      const C = window.ELAB_CERT;
+      if (!C) { pane.innerHTML = `<p class="tmsg err">Tekshirish moduli yuklanmadi.</p>`; return; }
+      const list = C.rows();
+      const accTag = r => r.k === "M" || r.status === "guest" ? `<span class="tag warn">Mehmon</span>` : (r.status === "valid" ? `<span class="tag ok">Ro‘yxat</span>` : (r.status === "revoked" ? `<span class="tag err">Bekor</span>` : `<span class="tag info">Lokal</span>`));
+      pane.innerHTML = `${this.google ? "" : `<p class="tmsg warn">${esc(tr("cert_localnote"))}</p>`}
+        <div class="tmsg info">${esc(tr("cert_info"))}</div>
+        ${this.certMsg ? `<p class="tmsg warn">${esc(this.certMsg)}</p>` : ""}
+        <label for="certQ">${esc(tr("cert_label"))}</label>
+        <div class="tgrid">
+          <input id="certQ" autocomplete="off" placeholder="${esc(tr("cert_ph"))}" value="${esc(this.certPrefill || "")}" style="flex:1 1 220px;min-width:0">
+          <button type="button" id="certGo">${esc(tr("cert_go"))}</button>
+          ${this.google ? `<button type="button" class="sec" id="certPull">${esc(tr("cert_pull"))}</button>` : ""}
+        </div>
+        <div id="certOut"></div>
+        <h4 style="margin:14px 0 6px">${esc(tr("cert_list"))}</h4>
+        <div class="tscroll"><table class="tt"><thead><tr><th>${esc(tr("cert_col_no"))}</th><th>${esc(tr("cert_col_who"))}</th><th>${esc(tr("cert_col_acc"))}</th><th>${esc(tr("cert_col_lab"))}</th><th>${esc(tr("cert_col_score"))}</th><th>${esc(tr("cert_col_date"))}</th></tr></thead><tbody>
+        ${list.length ? list.map(r => `<tr data-no="${esc(r.no)}" style="cursor:pointer"><td>${esc(r.no)}</td><td><b>${esc(r.name || "—")}</b>${r.email ? `<br><span style="color:#94a3b8">${esc(r.email)}</span>` : ""}</td><td>${accTag(r)}</td><td>${esc(r.lab || "—")}</td><td>${r.score != null ? esc(r.score + "%") : "—"}</td><td>${esc(r.date || "—")}</td></tr>`).join("") : `<tr><td colspan="6" style="color:#94a3b8;padding:14px">${esc(tr("cert_empty"))}</td></tr>`}
+        </tbody></table></div>`;
+      const run = () => {
+        const q = document.getElementById("certQ");
+        const out = document.getElementById("certOut");
+        if (!q || !out) return;
+        const res = C.lookup(q.value);
+        if (res && res.no && /^TerDPI-EL-/.test(res.no)) q.value = res.no;
+        this.certPrefill = q.value;
+        out.innerHTML = this.certCard(res);
+      };
+      document.getElementById("certGo").onclick = run;
+      document.getElementById("certQ").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); run(); } };
+      const pull = document.getElementById("certPull");
+      if (pull) pull.onclick = () => {
+        this.certFresh = false;
+        this.certPrefill = document.getElementById("certQ").value;
+        this.certAutorun = false;
+        this.certMsg = "";
+        this.paneCert();
+      };
+      pane.querySelectorAll("[data-no]").forEach(tr => tr.onclick = () => {
+        const q = document.getElementById("certQ");
+        q.value = tr.getAttribute("data-no");
+        run();
+      });
+      if (this.certAutorun && this.certPrefill) {
+        this.certAutorun = false;
+        run();
+      }
     },
     groupsOf(rows) {
       const g = [...new Set(rows.map(r => r.group).filter(Boolean))];
@@ -833,6 +961,7 @@
           <button type="button" data-yjump="y5">5. Ogohlantirish</button>
           <button type="button" data-yjump="y6">6. Kod</button>
           <button type="button" data-yjump="y7">7. Talaba</button>
+          <button type="button" data-yjump="yCert">Sertifikat</button>
           <button type="button" data-yjump="y8">8. Yangilash</button>
           <button type="button" data-yjump="y9">9. Parol</button>
           <button type="button" data-yjump="y10">10. Xatolar</button>
@@ -912,6 +1041,12 @@
           <li>Laboratoriya: kirish testi, o‘lchov, hisob, xulosa va baho shu jadvalning <span class="ybtn">Jurnal</span> varag‘iga tushadi.</li>
           <li><span class="ybtn">Mehmon sifatida davom etish</span> laboratoriyani ochadi, lekin jurnalga yozmaydi.</li>
         </ol>
+
+        <h3 id="yCert">Sertifikatni tekshirish</h3>
+        <p><span class="ybtn">Sertifikat</span> bo‘limi faqat o‘qituvchi panelida ochiladi. Raqamni yozing, tasdiqlash kodini qo‘shing yoki sertifikatdagi QR havolasini joylang.</p>
+        <p>Talaba Google hisobi va sinf kodi bilan kirib sertifikatni yuklab olsa, raqam shu talabaning jurnal yozuviga tushadi. Unda ism, ball, baho, sana va laboratoriya ishi ko‘rinadi. Hisob «Ro‘yxatdan o‘tgan talaba» deb turadi va elektron pochta Google hisobidan olinadi.</p>
+        <p>Mehmon sertifikatida qizil yozuv bor: «Mehmon rejimida olingan — tasdiqlanmagan». Raqam M harfi bilan boshlanadi. U jurnalga yozilmaydi. Tekshiruvda shu yozuv chiqadi; QR dagi ism sertifikatning o‘zidagi da’vo, u tasdiqlanmagan.</p>
+        <p>Jurnalda yo‘q raqam tasdiqlangan hisoblanmaydi. Eski PDF (shu yangilanishdan oldin) markazda saqlanmagan — u faqat jurnalidagi ism, guruh, ID, ball va vaqt aynan mos kelsa topiladi. Jurnal skriptini yangilash shart emas: sertifikat ish yozuvining ichida ketadi.</p>
 
         <h3 id="y8">8. Drive dan yangilash va eksport</h3>
         <ol>
