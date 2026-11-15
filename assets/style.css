@@ -38,3 +38,15 @@ section{scroll-margin-top:72px}
 dialog#lb{border:0;padding:0;background:transparent;max-width:96vw;max-height:96vh}dialog#lb::backdrop{background:rgba(0,0,0,.8)}
 dialog#lb img{max-width:96vw;max-height:94vh;display:block}dialog#lb button{position:absolute;top:8px;right:8px;width:48px;height:48px;border-radius:50%;border:0;font-size:22px;cursor:pointer}
 @media(max-width:760px){.huquq{grid-template-columns:1fr}.guv{max-width:260px;margin:0 auto}}
+
+.hisob{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.hisob article{background:#fff;border-radius:18px;padding:18px 14px 16px;text-align:center;box-shadow:0 4px 18px rgba(15,23,42,.08);border-top:4px solid #1e40af;min-width:0}
+.hisob article:nth-child(2){border-top-color:#0891b2}
+.hisob article:nth-child(3){border-top-color:#16a34a}
+.hisob article:nth-child(4){border-top-color:#f59e0b}
+.stat-k,.stat-v,.stat-s{margin:0}
+.stat-k{font-weight:700;color:#1e40af;font-size:.95rem;line-height:1.3;min-height:2.6em;display:flex;align-items:flex-end;justify-content:center}
+.stat-v{font-size:clamp(1.55rem,3.4vw,2.15rem);font-weight:800;color:#0b1f4d;line-height:1.15;margin-top:8px;font-variant-numeric:tabular-nums}
+.stat-s{color:#475569;font-size:.88rem;margin-top:6px;min-height:1.35em}
+@media(max-width:760px){.hisob{grid-template-columns:1fr 1fr;gap:12px}.hisob article{padding:14px 10px 12px}.stat-k{font-size:.88rem}}
+@media(max-width:380px){.hisob{grid-template-columns:1fr}}
